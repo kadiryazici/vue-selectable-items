@@ -1,9 +1,13 @@
+import type { Component } from 'vue';
 import { ItemTypes } from './constants';
-import type { CustomItem, Item, ItemGroup } from './types';
+import type { AllItems, CustomItem, Item, ItemGroup } from './types';
 
 const createKey = () => performance.now().toString(36) + Math.random().toString(36).slice(2);
 
-export function itemGroup(items: ItemGroup['items'], options?: Omit<ItemGroup, 'type' | 'key' | 'items'>): ItemGroup {
+export function itemGroup(
+  items: ItemGroup['items'],
+  options?: Omit<ItemGroup, 'type' | 'key' | 'items'>,
+): ItemGroup {
   return {
     ...options,
     items,
@@ -12,7 +16,10 @@ export function itemGroup(items: ItemGroup['items'], options?: Omit<ItemGroup, '
   };
 }
 
-export function item(data: Item['metaData'], options?: Omit<Item, 'type' | 'key' | 'metaData'>): Item {
+export function item(
+  data: Item['metaData'],
+  options?: Omit<Item, 'type' | 'key' | 'metaData'>,
+): Item {
   return {
     ...options,
     metaData: data,
@@ -50,3 +57,28 @@ export function isItem(value: unknown): value is Item {
 export function isCustomItem(value: unknown): value is CustomItem {
   return isObject(value) && value.type === ItemTypes.Custom;
 }
+
+export function isComponent(value: unknown): value is Component {
+  if (isObject(value)) {
+    return typeof value.setup === 'function' || typeof value.render === 'function';
+  }
+
+  return typeof value === 'function';
+}
+
+export const getFlattenedItems = (
+  items: AllItems[], //
+  seenItems: (Item | CustomItem)[] = [],
+): (Item | CustomItem)[] => {
+  items.forEach((item) => {
+    if (isItemGroup(item)) {
+      getFlattenedItems(item.items, seenItems);
+    }
+
+    if (isItem(item) || isCustomItem(item)) {
+      seenItems.push(item);
+    }
+  });
+
+  return seenItems;
+};

@@ -3,7 +3,7 @@ import { SelectableItems } from '../src';
 import { customItem, item, itemGroup } from '../src/functions';
 
 const items = [
-  item('Hello this is item'),
+  item('Hello this is item but not item yes btw'),
   customItem('Custom item', {
     slotName: 'momento',
   }),
@@ -20,9 +20,10 @@ const App = defineComponent({
         <hr />
         <br />
         <SelectableItems
+          onSelect={console.log}
           items={items}
           v-slots={{
-            render: (text: string) => text,
+            render: (text: string) => <div class="my-item">{text}</div>,
             momento: (text: string) => <small>{text}</small>,
           }}
         />

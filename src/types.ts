@@ -5,31 +5,29 @@ export type AllItems = Item | CustomItem | ItemGroup;
 export interface ItemGroup {
   key: string;
   type: symbol;
-  wrapperComponent?: Component | string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wrapperComponentProps?: Record<string, any>;
+  wrapperComponentOrTag?: Component | string;
+  wrapperProps?: Record<string, unknown>;
   items: AllItems[];
 }
 
 export interface Item {
   key: string;
   type: symbol;
-  wrapperComponent?: Component | string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wrapperComponentProps?: Record<string, any>;
+  wrapperComponentOrTag?: Component | string;
+  wrapperProps?: Record<string, unknown>;
   elementTag?: string;
   elementAttrs?: {
     key?: undefined;
     ref?: Ref<HTMLElement | null | undefined>;
+    [key: string]: unknown;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metaData?: any;
+  onSelect?: (metaData: unknown) => void;
+  metaData?: unknown;
 }
 
 export interface CustomItem {
   key: string;
   type: symbol;
   slotName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metaData?: any;
+  metaData?: unknown;
 }

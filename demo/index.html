@@ -5,6 +5,35 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
+
+    <style>
+      .vue-selectable-items {
+        width: 150px;
+        height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .vue-selectable-items-item {
+        max-width: inherit;
+        width: 150px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .vue-selectable-items-item-focused {
+        background-color: rgb(44, 44, 44, .2)
+      }
+
+      .my-item {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
