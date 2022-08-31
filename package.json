@@ -1,6 +1,28 @@
 {
   "name": "vue-selectable-items",
   "version": "0.0.0",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/types/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "url": "git+https://github.com/kadiryazici/vue-selectable-items.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/kadiryazici/vue-selectable-items/issues"
+  },
+  "homepage": "https://github.com/kadiryazici/vue-selectable-items#readme",
+  "keywords": [
+    "vue dropdown",
+    "vue select",
+    "vue combobox"
+  ],
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
@@ -9,9 +31,6 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
-  },
-  "dependencies": {
-    "vue": "^3.2.37"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
@@ -29,7 +48,12 @@
     "prettier": "^2.7.1",
     "typescript": "~4.7.4",
     "vite": "^3.0.4",
+    "vite-plugin-dts": "^1.4.1",
     "vitest": "^0.21.0",
+    "vue": "^3.2.38",
     "vue-tsc": "^0.39.5"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.38"
   }
 }

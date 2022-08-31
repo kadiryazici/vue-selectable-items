@@ -8,6 +8,7 @@ import {
   mergeProps,
   computed,
   ref,
+  withCtx,
 } from 'vue';
 import { ClassNames, DEFAULT_ITEM_SLOT_NAME } from './constants';
 import { getFlattenedItems, isComponent, isCustomItem, isItem, isItemGroup } from './functions';
@@ -38,7 +39,7 @@ export default defineComponent({
     },
     setup: {
       type: Function as PropType<Props['setup']>,
-      default: () => null,
+      default: null,
     },
   },
   emits: {
@@ -105,7 +106,7 @@ export default defineComponent({
       }
     });
 
-    props.setup({
+    props.setup?.({
       focusNext,
       focusPrevious,
       selectedCurrentItem: () => selectItem(),
@@ -128,14 +129,16 @@ export default defineComponent({
           const Wrapper = item.wrapperComponentOrTag || Fragment;
           const props = item.wrapperProps || {};
 
+          const children = renderer(item.items);
+
           // Have to use `h` here because JSX thinks
           // renderer(item.items) returns a vNode not vNode[]
           // so it converts it into vNode[][]
           return h(
             // @ts-expect-error it's dynamic component
             Wrapper,
-            mergeProps({ key: item.key }, props),
-            renderer(item.items),
+            mergeProps({ key: item.key, to: 'body' }, props),
+            isComponent(Wrapper) ? { default: withCtx(() => children) } : children,
           );
         }
 
@@ -162,14 +165,13 @@ export default defineComponent({
             isComponent(item.wrapperComponentOrTag) ||
             typeof item.wrapperComponentOrTag === 'string'
           ) {
-            return (
+            return h(
               // @ts-expect-error dynamic component
-              <item.wrapperComponentOrTag
-                key={item.key}
-                {...(item.wrapperProps || {})}
-              >
-                {vNodeItem}
-              </item.wrapperComponentOrTag>
+              item.wrapperComponentOrTag,
+              mergeProps({ key: item.key }, item.wrapperProps || {}),
+              isComponent(item.wrapperComponentOrTag)
+                ? { default: withCtx(() => [vNodeItem]) }
+                : [vNodeItem],
             );
           }
 
@@ -177,7 +179,11 @@ export default defineComponent({
         }
 
         if (isCustomItem(item) && Object.keys(this.$slots).includes(item.slotName)) {
-          return <Fragment key={item.key}>{this.$slots[item.slotName]?.(item.metaData)}</Fragment>;
+          return h(
+            Fragment,
+            { key: item.key }, //
+            this.$slots[item.slotName]?.(item.metaData),
+          );
         }
 
         return null;

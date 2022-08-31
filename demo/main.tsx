@@ -9,6 +9,15 @@ const items = [
   }),
   itemGroup([
     item('Hello this is item 2'), //
+    itemGroup([
+      customItem(
+        {
+          onClick: console.log.bind(console, 'Hello guys'),
+          text: 'Bruhos momentos',
+        },
+        { slotName: 'bruhos' },
+      ),
+    ]),
   ]),
 ];
 
@@ -25,6 +34,14 @@ const App = defineComponent({
           v-slots={{
             render: (text: string) => <div class="my-item">{text}</div>,
             momento: (text: string) => <small>{text}</small>,
+            bruhos: ({ onClick, text }: { onClick: () => void; text: string }) => (
+              <button
+                type="button"
+                onClick={onClick}
+              >
+                {text}
+              </button>
+            ),
           }}
         />
       </div>
