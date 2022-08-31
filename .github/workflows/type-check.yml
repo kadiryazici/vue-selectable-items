@@ -5,7 +5,7 @@ on: push
 jobs:
   publish:
     runs-on: ubuntu-latest
-    name: Publish
+    name: Type Check
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
