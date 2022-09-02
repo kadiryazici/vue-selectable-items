@@ -374,28 +374,29 @@ Let's explain everything step by step.
     ```
 
 ## Notes
-  - Never pass single item reference twice, each item should be unique, because each item is created with a key and keys should be unique for each item. 
-  ```ts
-  const myItem = item('My Item');
+  - Never pass single item reference more than once, each item should be unique, because each item is created with a key and keys should be unique for each item. 
+  
+    ```ts
+    const myItem = item('My Item');
 
-  const items = [
-    myItem,
-    itemGroup([
-      myItem
-    ])
-  ]
+    const items = [
+      myItem,
+      itemGroup([
+        myItem
+      ])
+    ]
 
-  console.log(items)
-    /*
-      {
-        key: 'sd3dgbcsz',
-      },
-      {
-        items: [
-          {
-            key: 'sd3dgbcsz' // DUPLICATE FOUND
-          }
-        ]
-      }
-    */
-  ```
+    console.log(items)
+      /*
+        {
+          key: 'sd3dgbcsz',
+        },
+        {
+          items: [
+            {
+              key: 'sd3dgbcsz' // DUPLICATE FOUND
+            }
+          ]
+        }
+      */
+    ```
