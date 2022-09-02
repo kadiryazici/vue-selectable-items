@@ -374,8 +374,8 @@ Let's explain everything step by step.
     ```
 
 ## Notes
-  - Never pass single item reference more than once, each item should be unique, because each item is created with a key and keys should be unique for each item. 
-  
+  - Never pass single item reference more than once, each item should be unique, because each item is created with a key and keys have to be unique for each item. 
+
     ```ts
     const myItem = item('My Item');
 
