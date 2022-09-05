@@ -31,3 +31,7 @@ export interface CustomItem {
   slotName: string;
   metaData?: unknown;
 }
+
+export type OnFocusHook = (metaData: unknown, el: HTMLElement) => void;
+export type OnUnfocusHook = (metaData: unknown, el: HTMLElement) => void;
+export type OnSelectHook = (metaData: unknown, el: HTMLElement) => void;
