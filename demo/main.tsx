@@ -1,6 +1,17 @@
-import { createApp, defineComponent } from 'vue';
-import { SelectableItems } from '../src';
+import { createApp, defineComponent, watch } from 'vue';
+import { SelectableItems, type SetupFunctionContext } from '../src';
 import { customItem, item, itemGroup } from '../src/functions';
+
+const setupHandler = (ctx: SetupFunctionContext) => {
+  ctx.onSelect(console.log);
+  ctx.onFocus(console.log);
+  ctx.onUnfocus(console.log);
+
+  watch(
+    () => ctx.getFocusedItemElement(),
+    (el) => console.log({ el }),
+  );
+};
 
 const items = [
   item('Hello this is item but not item yes btw'),
@@ -31,6 +42,7 @@ const App = defineComponent({
         <SelectableItems
           onSelect={console.log}
           items={items}
+          setup={setupHandler}
           v-slots={{
             render: (text: string) => <div class="my-item">{text}</div>,
             momento: (text: string) => <small>{text}</small>,

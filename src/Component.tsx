@@ -9,20 +9,38 @@ import {
   computed,
   ref,
   withCtx,
+  onBeforeUpdate,
+  reactive,
+  watch,
 } from 'vue';
 import { ClassNames, DEFAULT_ITEM_SLOT_NAME } from './constants';
 import { getFlattenedItems, isComponent, isCustomItem, isItem, isItemGroup } from './functions';
-import type { AllItems } from './types';
+import type { AllItems, Item, OnFocusHook, OnSelectHook, OnUnfocusHook } from './types';
+
+export type SetupFunctionContext = {
+  focusNext(): void;
+  focusPrevious(): void;
+  clearFocus(): void;
+  setFocusByKey(key: string): void;
+  setFocusByIndex(index: number): void;
+  onSelect(fn: OnSelectHook): void;
+  onFocus(fn: OnFocusHook): void;
+  onUnfocus(fn: OnUnfocusHook): void;
+  getItemMetaDataByKey(key: string): unknown;
+  getSelectableItemCount(): number;
+  getSelectableItems(): Item[];
+  selectFocusedElement(): void;
+  getItemElementByKey(key: string): HTMLElement | undefined;
+  getItemElementByIndex(index: number): HTMLElement | undefined;
+  scrollToFocusedElement(options?: ScrollIntoViewOptions): void;
+  getFocusedItemElement(): HTMLElement | undefined;
+};
 
 export interface Props {
   noWrapperElement: boolean;
   items: AllItems[];
   onSelect: (metaData: unknown) => void;
-  setup: (context: {
-    focusNext: () => void;
-    focusPrevious: () => void;
-    selectedCurrentItem: () => void;
-  }) => void;
+  setup: (context: SetupFunctionContext) => void;
 }
 
 export default defineComponent({
@@ -53,23 +71,85 @@ export default defineComponent({
     const focusedItemIndex = computed(() =>
       selectableItems.value.findIndex((item) => item.key === focusedKey.value),
     );
+    const focusedItem = computed<Item | undefined>(
+      () => selectableItems.value[focusedItemIndex.value],
+    );
+
+    const setFocusByKey = (key: string) => {
+      focusedKey.value = key;
+    };
+
+    const setFocusByIndex = (index: number) => {
+      const item = selectableItems.value[index];
+      if (isItem(item)) {
+        setFocusByKey(selectableItems.value[index].key);
+      }
+    };
+
+    const selectableItemsElements = reactive(new Map<string, HTMLElement>());
+    onBeforeUpdate(() => selectableItemsElements.clear());
+
+    const saveSelectableItemElement = (key: string, element: HTMLElement) =>
+      selectableItemsElements.set(key, element);
+
+    const focusHooks = new Set<OnFocusHook>();
+    const selectHooks = new Set<OnSelectHook>();
+    const unfocusHooks = new Set<OnUnfocusHook>();
+
+    const onFocus = (fn: OnFocusHook) => focusHooks.add(fn);
+    const onSelect = (fn: OnSelectHook) => selectHooks.add(fn);
+    const onUnfocus = (fn: OnUnfocusHook) => unfocusHooks.add(fn);
+
+    const runSelectHooks = (item: Item) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const el = selectableItemsElements.get(item.key)!;
+      selectHooks.forEach((hook) => hook(item.metaData, el));
+    };
+
+    const runFocusHooks = (item: Item) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const el = selectableItemsElements.get(item.key)!;
+      focusHooks.forEach((hook) => hook(item.metaData, el));
+    };
+
+    const runUnfocusHooks = (item: Item) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const el = selectableItemsElements.get(item.key)!;
+      unfocusHooks.forEach((hook) => hook(item.metaData, el));
+    };
+
+    watch(focusedItem, (to, from) => {
+      if (isItem(from)) runUnfocusHooks(from);
+      if (isItem(to)) runFocusHooks(to);
+    });
+
+    const scrollToFocusedElement = (options: ScrollIntoViewOptions = {}) => {
+      const el = selectableItemsElements.get(focusedKey.value);
+      if (el) el.scrollIntoView(options);
+    };
+
+    const getItemElementByIndex = (index: number) => {
+      const item = selectableItems.value[index];
+      if (isItem(item)) return selectableItemsElements.get(item.key);
+    };
+
+    const getItemElementByKey = (key: string) => {
+      const item = getItemByKey(key);
+      if (isItem(item)) return selectableItemsElements.get(key);
+    };
 
     const focusNext = () => {
       const nextIndex =
         focusedItemIndex.value >= selectableItems.value.length - 1 ? 0 : focusedItemIndex.value + 1;
 
-      focusedKey.value = selectableItems.value[nextIndex].key;
+      setFocusByIndex(nextIndex);
     };
 
     const focusPrevious = () => {
       const nextIndex =
         focusedItemIndex.value <= 0 ? selectableItems.value.length - 1 : focusedItemIndex.value - 1;
 
-      focusedKey.value = selectableItems.value[nextIndex].key;
-    };
-
-    const setFocus = (key: string) => {
-      focusedKey.value = key;
+      setFocusByIndex(nextIndex);
     };
 
     const getItemByKey = (key: string) => selectableItems.value.find((item) => item.key === key);
@@ -84,32 +164,33 @@ export default defineComponent({
       if (!item) return;
 
       item.onSelect?.(item.metaData);
+      runSelectHooks(item);
       emit('select', item.metaData);
     };
 
-    window.addEventListener('keydown', (e) => {
-      switch (e.key) {
-        case 'ArrowDown': {
-          focusNext();
-          break;
-        }
+    const clearFocus = () => {
+      focusedKey.value = '';
+    };
 
-        case 'ArrowUp': {
-          focusPrevious();
-          break;
-        }
-
-        case 'Enter': {
-          selectItem();
-          break;
-        }
-      }
-    });
+    const getItemMetaDataByKey = (key: string) => getItemByKey(key)?.metaData;
 
     props.setup?.({
       focusNext,
       focusPrevious,
-      selectedCurrentItem: () => selectItem(),
+      clearFocus,
+      setFocusByKey,
+      setFocusByIndex,
+      onSelect,
+      onFocus,
+      onUnfocus,
+      getItemMetaDataByKey,
+      getSelectableItemCount: () => selectableItems.value.length,
+      getSelectableItems: () => selectableItems.value,
+      selectFocusedElement: () => selectItem(),
+      getItemElementByIndex,
+      getItemElementByKey,
+      scrollToFocusedElement,
+      getFocusedItemElement: () => selectableItemsElements.get(focusedKey.value),
     });
 
     return {
@@ -118,8 +199,9 @@ export default defineComponent({
       focusNext,
       focusPrevious,
       isFocused,
-      setFocus,
+      setFocusByKey,
       selectItem,
+      saveSelectableItemElement,
     };
   },
   render() {
@@ -154,8 +236,9 @@ export default defineComponent({
                 },
               ]}
               {...(item.elementAttrs || {})}
-              onMouseenter={() => this.setFocus(item.key)}
+              onMouseenter={() => this.setFocusByKey(item.key)}
               onClick={() => this.selectItem(item.key)}
+              ref={(instance) => this.saveSelectableItemElement(item.key, instance as HTMLElement)}
             >
               {this.$slots[DEFAULT_ITEM_SLOT_NAME]?.(item.metaData)}
             </Tag>
