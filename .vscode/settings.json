@@ -1,12 +1,19 @@
 {
   "eslint.format.enable": true,
+  "stylelint.enable": true,
+  "css.validate": false,
+  "scss.validate": false,
+  "stylelint.validate": ["css", "scss"],
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[scss][css]": {
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
     "source.fixAll.stylelint": true
   },
   "volar.completion.preferredAttrNameCase": "camel",
   "volar.completion.preferredTagNameCase": "pascal",
-  "files.eol": "\n",
+  "files.eol": "\n"
 }

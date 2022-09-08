@@ -2,10 +2,11 @@ import { defineConfig, type UserConfigExport } from 'vite';
 import VueJSX from '@vitejs/plugin-vue-jsx';
 import path from 'path';
 import ViteDTS from 'vite-plugin-dts';
+import Vue from '@vitejs/plugin-vue';
 
 const devConfig: UserConfigExport = {
-  plugins: [VueJSX()],
-  root: './demo',
+  plugins: [VueJSX(), Vue()],
+  root: './playground',
 };
 
 const prodConfig: UserConfigExport = {

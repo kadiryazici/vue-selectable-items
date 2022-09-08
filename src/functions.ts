@@ -1,13 +1,18 @@
 import type { Component } from 'vue';
 import { ItemTypes } from './constants';
-import type { AllItems, CustomItem, Item, ItemGroup } from './types';
+import type {
+  AllItems,
+  CustomItem,
+  CustomItemOptions,
+  Item,
+  ItemGroup,
+  ItemGroupOptions,
+  ItemOptions,
+} from './types';
 
 const createKey = () => performance.now().toString(36) + Math.random().toString(36).slice(2);
 
-export function itemGroup(
-  items: ItemGroup['items'],
-  options?: Omit<ItemGroup, 'type' | 'key' | 'items'>,
-): ItemGroup {
+export function itemGroup(items: ItemGroup['items'], options?: ItemGroupOptions): ItemGroup {
   return {
     ...options,
     items,
@@ -16,10 +21,7 @@ export function itemGroup(
   };
 }
 
-export function item(
-  data: Item['metaData'],
-  options?: Omit<Item, 'type' | 'key' | 'metaData'>,
-): Item {
+export function item(data: Item['metaData'], options?: ItemOptions): Item {
   return {
     ...options,
     metaData: data,
@@ -28,10 +30,7 @@ export function item(
   };
 }
 
-export function customItem(
-  data: CustomItem['metaData'],
-  options: Omit<CustomItem, 'type' | 'key' | 'metaData'>,
-): CustomItem {
+export function customItem(data: CustomItem['metaData'], options: CustomItemOptions): CustomItem {
   return {
     ...options,
     metaData: data,

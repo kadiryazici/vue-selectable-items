@@ -35,3 +35,7 @@ export interface CustomItem {
 export type OnFocusHook = (metaData: unknown, el: HTMLElement) => void;
 export type OnUnfocusHook = (metaData: unknown, el: HTMLElement) => void;
 export type OnSelectHook = (metaData: unknown, el: HTMLElement) => void;
+
+export type CustomItemOptions = Omit<CustomItem, 'type' | 'key' | 'metaData'>;
+export type ItemOptions = Omit<Item, 'type' | 'key' | 'metaData'>;
+export type ItemGroupOptions = Omit<ItemGroup, 'type' | 'key' | 'items'>;
