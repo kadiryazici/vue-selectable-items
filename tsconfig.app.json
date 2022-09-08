@@ -1,8 +1,5 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["env.d.ts", "src/**/*", "demo/**/*"],
+  "include": ["env.d.ts", "src/**/*", "playground/**/*"],
   "exclude": ["src/**/__tests__/*"],
-  "compilerOptions": {
-    "composite": true,
-  }
 }
