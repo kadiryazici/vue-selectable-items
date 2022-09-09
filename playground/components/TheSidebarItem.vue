@@ -84,10 +84,8 @@ const emit = defineEmits<Emits>();
   cursor: default;
 
   &._active {
-    color: var(--accent-1);
-
-    ._text,
-    ._code {
+    ._text {
+      color: var(--accent-1);
       &:hover {
         color: var(--accent);
       }
