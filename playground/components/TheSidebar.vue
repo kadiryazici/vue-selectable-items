@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { Example } from '../types';
+import TheSidebarItem from './TheSidebarItem.vue';
 
 interface Props {
   examples?: Example[];
@@ -7,36 +8,43 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'updateActiveExample', id: string): void;
+  (e: 'update:activeExample', id: string): void;
+  (e: 'clickSourceCode'): void;
 }
 
-withDefaults(defineProps<Props>(), { examples: () => [] });
+const props = withDefaults(defineProps<Props>(), { examples: () => [] });
 const emit = defineEmits<Emits>();
 
 function handleItemClick(example: Example) {
-  emit('updateActiveExample', example.id);
+  emit('update:activeExample', example.id);
 }
 </script>
 
 <template>
   <ul class="_sidebar">
-    <li
-      v-for="example in examples"
+    <TheSidebarItem
+      v-for="example in props.examples"
       :key="example.id"
+      :text="example.title"
+      :active="props.activeExample === example.id"
       @click="() => handleItemClick(example)"
-    >
-      {{ example.title }}
-    </li>
+      @clickSourceCode="$emit('clickSourceCode')"
+    />
   </ul>
 </template>
 
 <style lang="scss" scoped>
 ._sidebar {
+  padding: 10px;
   width: var(--sidebar-width);
   height: 100%;
   position: fixed;
   left: 0;
   top: 0;
   background-color: var(--bg-3);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  overflow-y: scroll;
 }
 </style>

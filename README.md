@@ -4,7 +4,7 @@
 
 This package only supports `Vue ^3.2.x`
 
-Vue Selectable Items is a flexable and lightweight library that provides data oriented selectable item list. 
+Vue Selectable Items is item rendering/selecting engine, it has zero styling and minimal functioning and all of its parts are configurable.
 
 ## Installation
 Install it with your favorite package manager
@@ -21,7 +21,6 @@ yarn add vue-selectable-items
 ```
 
 ## Usage
-Vue Selectable Items by default has tiny render system and zero styling, everything is up to user of library.
 
 #### Import the component and functions to create items.
 
@@ -31,14 +30,21 @@ import { ref } from 'vue';
 import { SelectableItems, item, customItem, itemGroup };
 
 const items = [
-  item({ title: 'New York City' }),
+  item({
+    key: 'item-key-1',
+    meta: { title: 'New York City' },
+  }),
   customItem({
-    onClick: () => doSomething(),
-    someProp: 123
-  }, { slotName: 'label' }),
-  itemGroup([
-    item({ title: 'Washington' })
-  ], { wrapperComponent: MyItemWrapperComponent })
+    key: 'label-1'
+    meta: {
+      onClick: () => doSomething(),
+      someProp: 123
+    },
+    name: 'label'
+  }),
+  itemGroup({
+    
+  })
 ]
 </script>
 
@@ -87,14 +93,14 @@ Let's explain everything step by step.
 #### item()
   - Type
     ```ts
-    function item(metaData: unknown, options?: ItemOptions): Item;
+    function item<Meta = unknown>(options: ItemOptions<Meta>): Item<Meta>;
     ```
   
   - Usage
 
     This is main function that creates a selectable item and will be rendered as `render` slot on component.
 
-    You can store any `metaData` in first argument and it will be passed as scoped slot `<template #render="metaData" />` for render use.
+    You can store any `meta` data in it will be passed as scoped slot `<template #render="meta" />` for render use.
 
 
     Selectable items are always rendered by `render`.
@@ -105,17 +111,14 @@ Let's explain everything step by step.
     import { ref } from 'vue'
     
     const items = ref([
-      item(
+      item({
+        key: 'my-item-unique-key',
         // Metadata, this will be accessable in slot data. You can give any value.
-        { title: 'Hello' } 
-
-        // Options, this will change or add behavior to rendered item.
-        {
-          // You can specifiy item specific event handler, this will be called when this item selected.
-          // `select` emit will be called always.
-          onSelect: (metaData) => console.log('Selected', metaData.title);
-        } 
-      )
+        meta: { title: 'Hello' } 
+        // You can specifiy item specific event handler, this will be called when this item selected.
+        // NOTE: `select` emit will be called always.
+        onSelect: (metaData) => console.log('Selected', metaData.title);
+      })
     ]);
     </script>
 
@@ -123,10 +126,10 @@ Let's explain everything step by step.
       <SelectableItems :items="items">
       <!-- 
         This slot will be called for each selectable item,
-        so metaData can be different for some items, it's up to you.
+        so meta can be different for some items, it's up to you.
       -->
-        <template #render="metaData"> 
-          {{ metaData.title }}
+        <template #render="meta"> 
+          {{ meta.title }}
         </template>
       </SelectableItems>
 
@@ -142,61 +145,61 @@ Let's explain everything step by step.
 
   - Options
     ```ts
-    item(metaData: unknown, options: ItemOptions);
+    item<Meta = unknown>(options: ItemOptions<Meta>): Item<Meta>;
 
-    interface ItemOptions {
+    interface ItemOptions<
+      Meta,
+      WrapperComponentOrTag,
+      ElementTag,
+
+      WrapperProps = GetWrapperComponentOrTagProps<WrapperComponent>
+      ElementAttrs = GetAttrs<ElementTag>
+    > {
       /**
        * You can wrap this item with a Component or an element.
        * If you pass component, item will be rendered on `default` slot of given component.
        * If you pass string, that string will be used as tag. Pass `div, span` etc.
        */
-      wrapperComponentOrTag?: Component | string;
+      wrapperComponentOrTag?: WrapperComponentOrTag;
 
       /**
        * Given attrs/props will be passed to `wrapperComponentOrTag`
        * For example if you passed `Teleport`to `wrapperComponentOrTag` you can 
        * pass `wrapperProps: { to: 'body' }`, and `Teleport` will use these props.
        */
-      wrapperProps?: Record<string, unknown>;
+      wrapperProps?: Props;
 
       /**
        * Tag of selectable element, by default it is `div.vue-selectable-item`
        * You can set a custom tag like `span`, `button` etc.
        */
-      elementTag?: string;
+      elementTag?: ElementTag;
 
       /**
        * Attrs that will be passed to selectable item.
        * For example if you set `elementTag` to a button, you can set it's type by passing
        * `elementAttrs: { type: 'submit' }`
        */
-      elementAttrs?: {
-        // NEVER PASS A KEY, IT CAN CAUSE ISSUES
-        key?: undefined;
-
-        // You can access to selectable element by giving a ref, any Vue specific attr/prop is available.
-        ref?: Ref<HTMLElement | null | undefined>;
-        [key: string]: unknown;
-      };
+      elementAttrs?: ElementAttrs,
 
       // Item specific selection event.
-      onSelect?: (metaData: unknown) => void;
+      onSelect?: (meta: Meta) => void;
     }
     ```
 
 #### customItem()
   - Type
     ```ts
-    function customItem(metaData: unknown, options: CustomItemOptions): CustomItem;
+    function customItem<Meta>(options: CustomItemOptions<Meta>): CustomItem<Meta>;
     ```
   
   - Usage
 
-    Custom item provides a way to add `non-selectable` item like elements respected by queue to list.
+    Custom item provides a way to add `non-selectable` item like elements respected by queue.
 
     CustomItem doesn't have a wrapper element by default, what is given is rendered.
 
-    You have to specify what slotName the customItem will be rendered and metaData will be passed as slot data.
+    You have to specify the slot name of customItem will be rendered to and meta will be passed as slot data.
 
     ```html
     <script setup>
@@ -204,26 +207,48 @@ Let's explain everything step by step.
     import { ref } from 'vue'
     
     const items = ref([
-      customItem('Cities', {
-        slotName: 'label'
+      customItem({
+        key: 'sp3ci4lK€Y'
+        meta: 'Cities'
+        name: 'label'
       })
     ]);
 
     const realWorldExample = ref([
-      customItem('Toyota', { slotName: 'label' }),
-      item({ name: 'Corolla' }),
-      item({ name: 'Supra' }),
+      customItem({ 
+        key: 'label:toyota',
+        meta: 'Toyota',
+        name: 'label'
+      }),
+      item({
+        key: 'corolla',
+        meta: { name: 'Corolla' }
+      }),
+      item({
+        key: 'supra', 
+        meta: { name: 'Supra' }
+      }),
 
-      customItem('Mercedes', { slotName: 'label' }),
-      item({ name: 'Golf' }),
-      item({ name: 'ID.5' }),
+      customItem({
+        key: 'label:volkswagen',
+        meta: 'Volkswagen',
+        name: 'label'
+      }),
+      item({ 
+        key: 'golf',
+        meta: { name: 'Golf' } 
+      }),
+      item({
+        key: 'id5'
+        meta: { name: 'ID.5'  }
+      }),
     ]);
     </script>
 
     <template>
       <SelectableItems :items="items">
       <!-- 
-        This slot will be called for each custom item that has `label` as slotName.
+        This slot will be called for each custom item that has `label` as name.
       -->
         <template #label="title"> 
           <h5> {{ title }} </h5>
@@ -239,27 +264,28 @@ Let's explain everything step by step.
 
   - Options
     ```ts
-    customItem(metaData: unknown, options: CustomItemOptions);
+    function customItem<Meta>(options: CustomItemOptions<Meta>): CustomItem<Meta>;
 
     interface CustomItemOptions {
+      meta: Meta,
       /**
-       * This custom item will be rendered to given slotName.
+       * This custom item will be rendered in given name as slotName.
        */
-      slotName: string;
+      name: string;
     }
     ```
 
 #### itemGroup()
   - Type
     ```ts
-    function itemGroup(items: (Item | CustomItem | ItemGroup)[], options?: ItemGroupOptions): ItemGroup;
+    function itemGroup<WrapperComponent>(options?: ItemGroupOptions<WrapperComponent>): ItemGroup<WrapperComponent>;
     ```
   
   - Usage
 
-    itemGroup is a way to group items under a structure. By default `itemGroup` has no effect on render but `wrapperComponentOrTag` of itemGroup be set and all items in the group will be rendered inside given wrapper component.
+    itemGroup is a way to group items under a structure. By default `itemGroup` has no effect on render but if `wrapperComponentOrTag` field is set itemGroup's all items will be rendered in given wrapper component.
 
-    Items inside `itemGroup` will be selectable/rendered by given order.
+    Items of `itemGroup` will be rendered by given order.
 
     ```html
     <script setup>
@@ -268,32 +294,49 @@ Let's explain everything step by step.
     import { ref } from 'vue'
     
     const items = ref([
-      customItem('Cities', {
-        slotName: 'label'
+      customItem({
+        key: 'cities:label',
+        meta: 'Cities',
+        name: 'label'
       }),
 
-      item('Hello'),
+      item({
+        key: 'greetingsItem',
+        meta: 'Hello'
+      }),
 
-      itemGroup(
-        [
-          item('How are you?'),
-          customItem('Countries', { slotName: 'label' }),
-          item({ text: 'New York', type: 'something' })
+      itemGroup({
+        key: 'my_item_group_and_needs_key',
+        items: [
+          item({
+            key: 'question:how',
+            meta: 'How are you?'
+          }),
+          customItem({
+            key: 'label:countries',
+            meta: 'Countries', 
+            name: 'label'
+          }),
+          item({
+            key: 'mySpecialItem'
+            meta: {
+              text: 'New York',
+              type: 'something'
+            },
+          })
         ],
-        {
-          wrapperComponentOrTag: GroupWrapper,
-          wrapperProps: {
-            title: 'Suggested Selections'
-          }
+        wrapperComponentOrTag: GroupWrapper,
+        wrapperProps: {
+          title: 'Suggested Selections'
         }
-      )
+      })
     ]);
     </script>
 
     <template>
       <SelectableItems :items="items">
       <!-- 
-        This slot will be called for each custom item that has `label` as slotName.
+        This slot will be called for each custom item that has `label` as name.
       -->
         <template #label="title"> 
           <h5> {{ title }} </h5>
@@ -374,29 +417,43 @@ Let's explain everything step by step.
     ```
 
 ## Notes
-  - Never pass single item reference more than once, each item should be unique, because each item is created with a key and keys have to be unique for each item. 
+  - Never pass single item reference more than once, each item should be unique, if you do, change the key! Duplicate keys will cause errors. 
 
     ```ts
-    const myItem = item('My Item');
+    const myItem = item({
+      key: 'my_itemov',
+      meta: 'My Item'
+    });
 
     const items = [
       myItem,
-      itemGroup([
-        myItem
-      ])
+      itemGroup({
+        key: 'group1',
+        items: [myItem]
+      })
     ]
 
     console.log(items)
       /*
         {
-          key: 'sd3dgbcsz',
+          key: 'my_itemov',
         },
         {
           items: [
             {
-              key: 'sd3dgbcsz' // DUPLICATE FOUND
+              key: 'my_itemov' // DUPLICATE FOUND
             }
           ]
         }
       */
     ```
+
+  - To get the best type support for `item()` and `itemGroup()` while defining `wrapperComponentOrTag` and `elementTag` as `string` use `as const`.
+  
+    Following images will show the difference.
+
+    ## Without `as const`
+    ![without const](https://raw.githubusercontent.com/kadiryazici/vue-selectable-items/main/images/images/no-type-div.png)
+
+    ## With `as const`
+    ![without const](https://raw.githubusercontent.com/kadiryazici/vue-selectable-items/main/images/images/with-type-div.png)

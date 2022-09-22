@@ -3,9 +3,16 @@ import VueJSX from '@vitejs/plugin-vue-jsx';
 import path from 'path';
 import ViteDTS from 'vite-plugin-dts';
 import Vue from '@vitejs/plugin-vue';
+import Icons from 'unplugin-icons/vite';
 
 const devConfig: UserConfigExport = {
-  plugins: [VueJSX(), Vue()],
+  plugins: [
+    VueJSX(), //
+    Vue(),
+    Icons({
+      compiler: 'vue3',
+    }),
+  ],
   root: './playground',
 };
 
@@ -15,6 +22,7 @@ const prodConfig: UserConfigExport = {
     ViteDTS({
       outputDir: 'dist/types',
       include: ['src'],
+      exclude: ['playground'],
     }),
   ],
   build: {

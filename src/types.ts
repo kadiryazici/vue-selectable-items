@@ -1,41 +1,73 @@
-import type { Component, Ref } from 'vue';
+import type { FunctionalComponent, Ref } from 'vue';
 
-export type AllItems = Item | CustomItem | ItemGroup;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AllItems = Item<any> | CustomItem<any> | ItemGroup;
 
-export interface ItemGroup {
+type GetComponentOrElementProps<C> = C extends string
+  ? C extends keyof JSX.IntrinsicElements
+    ? JSX.IntrinsicElements[C]
+    : Record<string, unknown>
+  : C extends FunctionalComponent<infer Props>
+  ? Props
+  : C extends new () => { $props: infer Props }
+  ? Props
+  : Record<string, unknown>;
+
+type GetElemenAttrs<T> = T extends string
+  ? T extends keyof JSX.IntrinsicElements
+    ? JSX.IntrinsicElements[T]
+    : Record<string, unknown>
+  : Record<string, unknown>;
+
+export interface ItemGroup<
+  WrapperComponent = unknown,
+  Props = GetComponentOrElementProps<WrapperComponent>,
+> {
   key: string;
   type: symbol;
-  wrapperComponentOrTag?: Component | string;
-  wrapperProps?: Record<string, unknown>;
+  wrapperComponentOrTag?: WrapperComponent;
+  wrapperProps?: Props;
   items: AllItems[];
 }
 
-export interface Item {
-  key: string;
-  type: symbol;
-  wrapperComponentOrTag?: Component | string;
-  wrapperProps?: Record<string, unknown>;
-  elementTag?: string;
-  elementAttrs?: {
+export interface Item<
+  Meta = unknown,
+  WrapperComponent = unknown,
+  ElementTag = unknown,
+  //
+  WrapperProps = GetComponentOrElementProps<WrapperComponent>,
+  ElementAttrs = {
     key?: undefined;
-    ref?: Ref<HTMLElement | null | undefined>;
-    [key: string]: unknown;
-  };
-  onSelect?: (metaData: unknown) => void;
-  metaData?: unknown;
-}
-
-export interface CustomItem {
+    ref?: Ref<HTMLElement | null | undefined> | ((el: HTMLElement) => void);
+  } & GetElemenAttrs<ElementTag>,
+> {
   key: string;
   type: symbol;
-  slotName: string;
-  metaData?: unknown;
+  wrapperComponentOrTag?: WrapperComponent;
+  wrapperProps?: WrapperProps;
+  elementTag?: ElementTag;
+  elementAttrs?: ElementAttrs;
+  onSelect?: (meta: Meta) => void;
+  meta?: Meta;
 }
 
-export type OnFocusHook = (metaData: unknown, el: HTMLElement) => void;
-export type OnUnfocusHook = (metaData: unknown, el: HTMLElement) => void;
-export type OnSelectHook = (metaData: unknown, el: HTMLElement) => void;
+export interface CustomItem<Meta = unknown> {
+  key: string;
+  type: symbol;
+  name: string;
+  meta?: Meta;
+}
 
-export type CustomItemOptions = Omit<CustomItem, 'type' | 'key' | 'metaData'>;
-export type ItemOptions = Omit<Item, 'type' | 'key' | 'metaData'>;
-export type ItemGroupOptions = Omit<ItemGroup, 'type' | 'key' | 'items'>;
+export type OnFocusHook = (meta: unknown, el: HTMLElement) => void;
+export type OnUnfocusHook = (meta: unknown, el: HTMLElement) => void;
+export type OnSelectHook = (meta: unknown, el: HTMLElement) => void;
+
+export type CustomItemOptions<Meta = unknown> = Omit<CustomItem<Meta>, 'type'>;
+export type ItemOptions<Meta = unknown, WrapperComponent = unknown, ElementTag = unknown> = Omit<
+  Item<Meta, WrapperComponent, ElementTag>,
+  'type'
+>;
+export type ItemGroupOptions<WrapperComponent = unknown> = Omit<
+  ItemGroup<WrapperComponent>,
+  'type'
+>;

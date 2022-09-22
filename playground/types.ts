@@ -3,8 +3,7 @@ import type { Component } from 'vue';
 export interface Example {
   title: string;
   id: string;
-  templateCode?: string;
-  scriptCode?: string;
+  code?: string;
   component: Component;
 }
 
