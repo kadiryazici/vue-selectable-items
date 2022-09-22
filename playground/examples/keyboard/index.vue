@@ -5,11 +5,12 @@ import {
   customItem,
   type SetupFunctionContext,
   type ItemOptions,
+  itemGroup,
 } from '../../../src';
 import useKey from '../../composables/useKey';
 import type { DemoItemMetaData } from '../../types';
 
-const itemOptions: ItemOptions = {
+const itemOptions: Partial<Omit<ItemOptions, 'meta'>> = {
   elementTag: 'button',
   elementAttrs: {
     tabindex: 0,
@@ -46,24 +47,67 @@ function setupHandler(ctx: SetupFunctionContext) {
     },
     { input: true, repeat: true, prevent: true },
   );
-  useKey('enter', ctx.selectFocusedElement, { input: true });
+  useKey(
+    'enter',
+    () => {
+      // We return if focused item is selectable item because by pressing enter
+      // users fire @click event and it triggeres selection
+      // so it selects twice.
+      if (document.activeElement?.hasAttribute('data-vue-selectable-items-item')) return;
+
+      ctx.selectFocusedElement();
+    },
+    { input: true },
+  );
 }
 
 const items = [
-  customItem(
-    { text: 'Cities' } as DemoItemMetaData, //
-    { slotName: 'label' },
-  ),
-  item({ text: 'Washington' } as DemoItemMetaData, itemOptions),
-  item({ text: 'New York City' } as DemoItemMetaData, itemOptions),
-  item({ text: 'Istanbul' } as DemoItemMetaData, itemOptions),
-  customItem(
-    { text: 'Cars' } as DemoItemMetaData, //
-    { slotName: 'label' },
-  ),
-  item({ text: 'BMW' } as DemoItemMetaData, itemOptions),
-  item({ text: 'Mercedes' } as DemoItemMetaData, itemOptions),
-  item({ text: 'Volkswagen' } as DemoItemMetaData, itemOptions),
+  customItem<DemoItemMetaData>({
+    key: 'label-1',
+    name: 'label',
+    meta: { text: 'Cities' },
+  }),
+  item<DemoItemMetaData>({
+    meta: { text: 'Washington' },
+    key: 'washington',
+    ...itemOptions,
+  }),
+  item<DemoItemMetaData>({
+    meta: { text: 'New York City' },
+    key: 'nwc',
+    ...itemOptions,
+  }),
+  item<DemoItemMetaData>({
+    meta: { text: 'Istanbul' },
+    key: 'Istanbul',
+    ...itemOptions,
+  }),
+  customItem<DemoItemMetaData>({
+    meta: { text: 'Cars' },
+    name: 'label',
+    key: 'label-cars',
+  }),
+  item<DemoItemMetaData>({
+    meta: { text: 'BMW' },
+    key: 'bmw',
+    onSelect: () => console.log('Bremın how are you'),
+    ...itemOptions,
+  }),
+  item<DemoItemMetaData>({
+    meta: { text: 'Mercedes' },
+    key: 'mercedes',
+    ...itemOptions,
+  }),
+  itemGroup({
+    key: 'group-of-car',
+    items: [
+      item<DemoItemMetaData>({
+        meta: { text: 'Volkswagen' },
+        key: 'Volkswagen',
+        ...itemOptions,
+      }),
+    ],
+  }),
 ];
 </script>
 

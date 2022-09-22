@@ -39,8 +39,12 @@ export type SetupFunctionContext = {
 export interface Props {
   noWrapperElement: boolean;
   items: AllItems[];
-  onSelect: (metaData: unknown) => void;
+  onSelect: (meta: unknown) => void;
   setup: (context: SetupFunctionContext) => void;
+}
+
+function getItemByKey(items: Item[], key: Item['key']) {
+  return items.find((item) => item.key === key);
 }
 
 export default defineComponent({
@@ -103,19 +107,19 @@ export default defineComponent({
     const runSelectHooks = (item: Item) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const el = selectableItemsElements.get(item.key)!;
-      selectHooks.forEach((hook) => hook(item.metaData, el));
+      selectHooks.forEach((hook) => hook(item.meta, el));
     };
 
     const runFocusHooks = (item: Item) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const el = selectableItemsElements.get(item.key)!;
-      focusHooks.forEach((hook) => hook(item.metaData, el));
+      focusHooks.forEach((hook) => hook(item.meta, el));
     };
 
     const runUnfocusHooks = (item: Item) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const el = selectableItemsElements.get(item.key)!;
-      unfocusHooks.forEach((hook) => hook(item.metaData, el));
+      unfocusHooks.forEach((hook) => hook(item.meta, el));
     };
 
     watch(focusedItem, (to, from) => {
@@ -134,7 +138,7 @@ export default defineComponent({
     };
 
     const getItemElementByKey = (key: string) => {
-      const item = getItemByKey(key);
+      const item = getItemByKey(selectableItems.value, key);
       if (isItem(item)) return selectableItemsElements.get(key);
     };
 
@@ -152,27 +156,25 @@ export default defineComponent({
       setFocusByIndex(nextIndex);
     };
 
-    const getItemByKey = (key: string) => selectableItems.value.find((item) => item.key === key);
-
     const isFocused = (key: string) => focusedKey.value === key;
 
     const selectItem = (queryKey?: string) => {
       const key = queryKey || focusedKey.value;
       if (!key) return;
 
-      const item = getItemByKey(key);
+      const item = getItemByKey(selectableItems.value, key);
       if (!item) return;
 
-      item.onSelect?.(item.metaData);
+      item.onSelect?.(item.meta);
       runSelectHooks(item);
-      emit('select', item.metaData);
+      emit('select', item.meta);
     };
 
     const clearFocus = () => {
       focusedKey.value = '';
     };
 
-    const getItemMetaDataByKey = (key: string) => getItemByKey(key)?.metaData;
+    const getItemMetaDataByKey = (key: string) => getItemByKey(selectableItems.value, key)?.meta;
 
     props.setup?.({
       focusNext,
@@ -217,7 +219,6 @@ export default defineComponent({
           // renderer(item.items) returns a vNode not vNode[]
           // so it converts it into vNode[][]
           return h(
-            // @ts-expect-error it's dynamic component
             Wrapper,
             mergeProps({ key: item.key, to: 'body' }, props),
             isComponent(Wrapper) ? { default: withCtx(() => children) } : children,
@@ -229,6 +230,7 @@ export default defineComponent({
 
           const vNodeItem = (
             <Tag
+              data-vue-selectable-items-item
               class={[
                 ClassNames.Item, //
                 {
@@ -240,7 +242,7 @@ export default defineComponent({
               onClick={() => this.selectItem(item.key)}
               ref={(instance) => this.saveSelectableItemElement(item.key, instance as HTMLElement)}
             >
-              {this.$slots[DEFAULT_ITEM_SLOT_NAME]?.(item.metaData)}
+              {this.$slots[DEFAULT_ITEM_SLOT_NAME]?.(item.meta)}
             </Tag>
           );
 
@@ -261,11 +263,11 @@ export default defineComponent({
           return vNodeItem;
         }
 
-        if (isCustomItem(item) && Object.keys(this.$slots).includes(item.slotName)) {
+        if (isCustomItem(item) && Object.keys(this.$slots).includes(item.name)) {
           return h(
             Fragment,
             { key: item.key }, //
-            this.$slots[item.slotName]?.(item.metaData),
+            this.$slots[item.name]?.(item.meta),
           );
         }
 

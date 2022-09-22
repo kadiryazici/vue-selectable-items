@@ -1,4 +1,4 @@
-import type { Component } from 'vue';
+import { markRaw, type Component } from 'vue';
 import { ItemTypes } from './constants';
 import type {
   AllItems,
@@ -10,31 +10,33 @@ import type {
   ItemOptions,
 } from './types';
 
-const createKey = () => performance.now().toString(36) + Math.random().toString(36).slice(2);
-
-export function itemGroup(items: ItemGroup['items'], options?: ItemGroupOptions): ItemGroup {
+export function itemGroup<WrapperComponent>(
+  options: ItemGroupOptions<WrapperComponent>,
+): ItemGroup<WrapperComponent> {
   return {
     ...options,
-    items,
-    key: createKey(),
+    wrapperComponentOrTag: isObject(options.wrapperComponentOrTag)
+      ? markRaw(options.wrapperComponentOrTag)
+      : options.wrapperComponentOrTag,
     type: ItemTypes.Group,
   };
 }
 
-export function item(data: Item['metaData'], options?: ItemOptions): Item {
+export function item<Meta = unknown, WrapperComponent = unknown, ElementTag = unknown>(
+  options: ItemOptions<Meta, WrapperComponent, ElementTag>,
+): Item<Meta, WrapperComponent, ElementTag> {
   return {
     ...options,
-    metaData: data,
-    key: createKey(),
+    wrapperComponentOrTag: isObject(options.wrapperComponentOrTag)
+      ? markRaw(options.wrapperComponentOrTag)
+      : options.wrapperComponentOrTag,
     type: ItemTypes.Item,
   };
 }
 
-export function customItem(data: CustomItem['metaData'], options: CustomItemOptions): CustomItem {
+export function customItem<Meta = unknown>(options: CustomItemOptions<Meta>): CustomItem<Meta> {
   return {
     ...options,
-    metaData: data,
-    key: createKey(),
     type: ItemTypes.Custom,
   };
 }

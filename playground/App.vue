@@ -1,20 +1,27 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import TheSidebar from './components/TheSidebar.vue';
 import examples from './examples';
 
-const activeExample = ref(examples[0].id);
+const activeExampleId = ref(examples[0].id);
+const activeExample = computed(() =>
+  examples.find((example) => example.id === activeExampleId.value),
+);
 </script>
 
 <template>
   <TheSidebar
-    v-model:activeExample="activeExample"
+    v-model:activeExample="activeExampleId"
     :examples="examples"
+    @clickSourceCode="({}.constructor.constructor('return console.log')()(activeExample?.code))"
   />
 
   <div class="site-container">
     <div class="site-content">
-      <Component :is="examples.find((example) => example.id === activeExample)?.component" />
+      <Component
+        :key="activeExampleId"
+        :is="activeExample?.component"
+      />
     </div>
   </div>
 </template>
