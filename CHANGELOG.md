@@ -2,11 +2,11 @@
 
   - (Component): `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
 
+  - (Component): `SelectableItems` component now exposes `Context` as template ref.
+
   - (Lib): Now all events has 3 arguments; Meta, Item and HTMLElement.
 
   - (Lib): New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
-
-  - (Lib): `SelectableItems` component now exposes `Context` as template ref.
 
   - (Types): Now `onSelect` property of an item has correct type support.
 
