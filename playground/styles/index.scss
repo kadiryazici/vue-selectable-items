@@ -12,7 +12,7 @@ $vars: (
   accent-2: rgb(4, 255, 184),
   txt-1: rgb(250, 250, 250),
   txt-2: rgb(220, 220, 220),
-  txt-3: rgb(190, 190, 190),
+  txt-3: rgb(155, 155, 155),
   
   // Measurements
   sidebar-width: 300px,
@@ -22,6 +22,12 @@ $vars: (
   @each $name, $value in $vars {
     --#{$name}: #{$value};
   }
+}
+
+.wowerlay {
+  border-radius: 5px;
+  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.271);
+  z-index: 1000;
 }
 
 * {
@@ -55,6 +61,10 @@ body,
   width: 100%;
 }
 
+* {
+  font-family: 'Inter', sans-serif;
+}
+
 /* stylelint-disable-next-line selector-max-id */
 #app {
   display: flex;
@@ -78,38 +88,85 @@ body,
   }
 }
 
-.vue-selectable-items {
+.input[type=text] {
   background-color: var(--bg-3);
-  border-radius: 10px;
-  box-shadow: 0 0 20px -10px rgb(0, 0, 0);
+  border: 0;
+  border-radius: 5px;
+  color: var(--txt-1);
+  padding: 5px 10px;
+  transition: box-shadow 0.15s;
+  will-change: box-shadow;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
+.btn {
+  background-color: rgba(182, 182, 182, 0.253);
+  border: 0;
+  border-radius: 5px;
+  color: rgb(223, 223, 223);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px;
+  text-align: left;
+  transition: box-shadow 0.15s;
+  will-change: box-shadow;
+
+  &:hover {
+    background-color: rgb(43, 43, 43);
+  }
+
+  &:active {
+    background-color: var(--bg-3);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
+.vue-selectable-items {
+  background-color: rgb(43, 43, 43);
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   height: 100%;
   max-height: 300px;
-  max-width: 150px;
-  overflow-y: auto;
+  max-width: 200px;
+  padding: 5px;
   width: 100%;
 
   .vue-selectable-items-item {
+    align-items: center;
     background-color: transparent;
     border: 0;
-    color: var(--txt-2);
+    border-radius: 5px;
+    color: rgb(223, 223, 223);
     cursor: pointer;
-    padding: 15px 10px;
+    display: flex;
+    flex-flow: row nowrap;
+    font-size: 14px;
+    font-weight: bold;
+    justify-content: space-between;
+    padding: 10px 15px;
     text-align: left;
+    width: 100%;
   }
 
   .vue-selectable-items-item-focused {
-    background-color: var(--bg-4);
-    color: var(--accent);
+    background-color: rgba(102, 102, 102, 0.253);
   }
 }
 
 .selection-label {
-  box-shadow: 0 3px 4px 0 rgb(0, 0, 0, 0.2);
-  color: var(--txt-3);
+  color: rgb(113, 113, 113);
   font-size: 12px;
+  font-weight: bolder;
   padding: 10px;
   text-align: left;
 }

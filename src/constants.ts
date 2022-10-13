@@ -4,6 +4,14 @@ export const ItemTypes = {
   Group: Symbol(),
 } as const;
 
+export enum HookType {
+  Focus,
+  Unfocus,
+  Select,
+  Hover,
+  DOMFocus,
+}
+
 export const DEFAULT_ITEM_SLOT_NAME = 'render';
 
 const libName = 'vue-selectable-items';

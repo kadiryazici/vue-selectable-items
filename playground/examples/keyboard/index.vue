@@ -1,16 +1,9 @@
 <script lang="ts" setup>
-import {
-  SelectableItems,
-  item,
-  customItem,
-  type SetupFunctionContext,
-  type ItemOptions,
-  itemGroup,
-} from '../../../src';
+import { SelectableItems, item, customItem, type Context, itemGroup } from '../../../src';
 import useKey from '../../composables/useKey';
 import type { DemoItemMetaData } from '../../types';
 
-const itemOptions: Partial<Omit<ItemOptions, 'meta'>> = {
+const itemOptions = {
   elementTag: 'button',
   elementAttrs: {
     tabindex: 0,
@@ -18,15 +11,15 @@ const itemOptions: Partial<Omit<ItemOptions, 'meta'>> = {
       outline: 'none',
     },
   },
-};
+} as const;
 
-function setupHandler(ctx: SetupFunctionContext) {
+function setupHandler(ctx: Context) {
   useKey(
     'down',
     () => {
       ctx.focusNext();
       ctx.getFocusedItemElement()?.focus({ preventScroll: true });
-      setTimeout(ctx.scrollToFocusedElement, 0, {
+      setTimeout(ctx.scrollToFocusedItemElement, 0, {
         behavior: 'smooth',
         block: 'center',
         inline: 'start',
@@ -39,7 +32,7 @@ function setupHandler(ctx: SetupFunctionContext) {
     () => {
       ctx.focusPrevious();
       ctx.getFocusedItemElement()?.focus({ preventScroll: true });
-      setTimeout(ctx.scrollToFocusedElement, 0, {
+      setTimeout(ctx.scrollToFocusedItemElement, 0, {
         behavior: 'smooth',
         block: 'center',
         inline: 'start',

@@ -4,7 +4,9 @@
 
 This package only supports `Vue ^3.2.x`
 
-Vue Selectable Items is item rendering/selecting engine, it has zero styling and minimal functioning and all of its parts are configurable.
+Vue-Selectable-Items is a data-oriented item rendering/selecting engine, it has zero styling and minimal functioning and all of its parts are configurable.
+
+It is as type safe as possible.
 
 ## Installation
 
@@ -70,6 +72,8 @@ Let's explain everything step by step.
 - Props:
 
   ```ts
+  import { type Context } from 'vue-selectable-items';
+
   interface SelectableItemProps {
     // Items for component to render/handle.
     items: (Item | ItemGroup | CustomItem)[];
@@ -80,16 +84,27 @@ Let's explain everything step by step.
 
     // If you want to add setup specific things:
     // onMounted, Composables, Keyboard Handling (see examples) and more setup specific stuff.
-    // NOTE: This function will only run once and won't track changes after setup.
-    setup?: (context: SelectableItemsSetupContext) => void;
+    // NOTE: This function will only run once on setup phase.
+    setup?: (context: Context) => void;
   }
   ```
 
 - Emits:
   ```ts
   interface Emits {
-    // When an item is selected, metaData of that item will be emitted with `select` event.
-    select: (metaData: any) => void;
+    // Triggered when an item is selected.
+    select(meta: any, item: Item<any>, el: HTMLElement): void;
+    // Triggered when an item is focused.
+    // This is for virtual focus of SelectableItems, not DOM focus
+    itemFocus(meta: any, item: Item<any>, el: HTMLElement): void;
+    // For DOM focus, this even can be used.
+    itemDOMFocus(e: FocusEvent, meta: any, item: Item<any>): void;
+    // Triggered when an item is unfocused/blurred.
+    itemUnfocus(meta: any, item: Item<any>, el: HTMLElement): void;
+    // Triggered when an item is focused by mouse
+    // `focus` event is also called but before `hover` event.
+    // programmatic focus, won't trigger this event.
+    itemHover(meta: any, item: Item<any>, el: HTMLElement): void;
   }
   ```
 
@@ -121,7 +136,7 @@ Let's explain everything step by step.
         meta: { title: 'Hello' }
         // You can specifiy item specific event handler, this will be called when this item selected.
         // NOTE: `select` emit will be called always.
-        onSelect: (metaData) => console.log('Selected', metaData.title);
+        onSelect: (meta, thisItem, element) => console.log('Selected', metaData.title);
       })
     ]);
   </script>
@@ -385,9 +400,15 @@ Let's explain everything step by step.
 
   ```ts
   const items = [
-    itemGroup([
-      itemGroup([customItem(), itemGroup([item(), customItem(), itemGroup([...enough])])]),
-    ]),
+    itemGroup({
+      key: 'parent',
+      children: [
+        itemGroup({
+          key: 'child',
+          children: [...more]
+        })
+      ]
+    })
   ];
   ```
 
@@ -416,6 +437,96 @@ Let's explain everything step by step.
   }
   ```
 
+## Context
+
+Context is an object of functions, you can access it via `setup` prop and `template ref`.
+Both `setup` and `template ref` has their own advantages.
+
+- In setup phase, you can create watchers to watch changes, but you lose freedom but you can assign `ctx` to a local variable to access in your own component instance.
+
+  ```html
+    <script lang="ts" setup>
+      import { type Context, SelectableItems } from 'vue-selectable-items';
+      import { watch } from 'vue';
+
+      let context: Context;
+
+      function handleSetup(ctx: Context) {
+        // You can carry context to your component scope
+        // But don't forget, only `handleSetup` function will run
+        // in SelectableItems setup phase
+        // Any onMounted or some composable will be dependent on SelectableItems instance.
+        // If you remove `SelectableItems` from render all watchers created inside handleSetup
+        // will be killed. 
+        context = ctx; 
+
+        ctx.onHover((meta, item, element) => {
+          element.focus();
+        })
+
+        // You can create computed and watchers here, but don't forget that it is binded to SelectableItems instance.
+        const focusedItem = computed(() => ctx.getFocusedItem())
+
+        watch(() => ctx.getFocusedItem(), (newItem, oldItem) => {
+          ...
+        })
+      }
+    </script>
+
+    <template>
+      <SelectableItems :items="items" :setup="handleSetup" />
+    </template>
+  ```
+
+- Template Ref
+  With template ref you can assign context directly to local variable, but you cannot create reactive effects and it will be only available after mount.
+
+  You can still control behavior of SelectableItems.
+
+  ```html
+    <script lang="ts" setup>
+      import { type Context, SelectableItems } from 'vue-selectable-items';
+      import { ref, onMounted } from 'vue';
+
+      const itemsContext = ref<Context>();
+
+      onMounted(() => {
+        itemsContext.value?.scrollToFocusedItemElement();
+        itemsContext.value?.clearFocus();
+      })
+    </script>
+
+    <template>
+      <SelectableItems :items="items" ref="itemsContext" />
+    </template>
+  ```
+
+Here is type of context:
+```ts
+export type Context = {
+  focusNext(): void;
+  focusPrevious(): void;
+  clearFocus(): void;
+  setFocusByKey(key?: string | null | undefined): void;
+  setFocusByIndex(index: number): void;
+  onSelect(fn: Hook): void;
+  onFocus(fn: Hook): void;
+  onUnfocus(fn: Hook): void;
+  onHover(fn: Hook): void;
+  onDOMFocus(fn: Hook): void;
+  getItemMetaDataByKey(key: string): unknown;
+  getSelectableItemCount(): number;
+  getSelectableItems(): Item[];
+  selectFocusedElement(): void;
+  getFocusedItem<Meta = unknown>(): Item<Meta> | undefined;
+  getItemElementByKey(key: string): HTMLElement | undefined;
+  getItemElementByIndex(index: number): HTMLElement | undefined;
+  scrollToFocusedItemElement(options?: ScrollIntoViewOptions): void;
+  getFocusedItemElement(): HTMLElement | undefined;
+};
+```
+
+
 ## Notes
 
 - Never pass single item reference more than once, each item should be unique, if you do, change the key! Duplicate keys will cause errors.
@@ -428,10 +539,7 @@ Let's explain everything step by step.
 
   const items = [
     myItem,
-    itemGroup({
-      key: 'group1',
-      items: [myItem],
-    }),
+    myItem,
   ];
 
   console.log(items);
@@ -440,11 +548,7 @@ Let's explain everything step by step.
         key: 'my_itemov',
       },
       {
-        items: [
-          {
-            key: 'my_itemov' // DUPLICATE FOUND
-          }
-        ]
+        key: 'my_itemov' // DUPLICATE FOUND
       }
     */
   ```

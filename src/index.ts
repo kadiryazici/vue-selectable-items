@@ -1,14 +1,21 @@
-export { default as SelectableItems, type Props, type SetupFunctionContext } from './Component';
-export { customItem, isCustomItem, isItem, isItemGroup, item, itemGroup } from './functions';
+export { default as SelectableItems, type Props, type Context } from './Component';
+export {
+  customItem,
+  isCustomItem,
+  isItem,
+  isItemGroup,
+  item,
+  itemGroup,
+  filterSelectableAndCustomItems,
+  filterSelectableItems,
+} from './functions';
 export type {
   AllItems,
   CustomItem,
   Item,
   ItemGroup,
-  OnFocusHook,
-  OnSelectHook,
+  Hook,
   CustomItemOptions,
   ItemGroupOptions,
   ItemOptions,
-  OnUnfocusHook,
 } from './types';

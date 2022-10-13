@@ -51,11 +51,11 @@ export function isItemGroup(value: unknown): value is ItemGroup {
   return isObject(value) && value.type === ItemTypes.Group;
 }
 
-export function isItem(value: unknown): value is Item {
+export function isItem<Meta = unknown>(value: unknown): value is Item<Meta> {
   return isObject(value) && value.type === ItemTypes.Item;
 }
 
-export function isCustomItem(value: unknown): value is CustomItem {
+export function isCustomItem<Meta = unknown>(value: unknown): value is CustomItem<Meta> {
   return isObject(value) && value.type === ItemTypes.Custom;
 }
 
@@ -67,19 +67,24 @@ export function isComponent(value: unknown): value is Component {
   return typeof value === 'function';
 }
 
-export const getFlattenedItems = (
-  items: AllItems[], //
-  seenItems: (Item | CustomItem)[] = [],
-): (Item | CustomItem)[] => {
+export function filterSelectableAndCustomItems<Meta = unknown>(
+  items: AllItems<Meta>[],
+): (Item<Meta> | CustomItem<Meta>)[] {
+  const seen: (Item<Meta> | CustomItem<Meta>)[] = [];
   items.forEach((item) => {
     if (isItemGroup(item)) {
-      getFlattenedItems(item.items, seenItems);
+      seen.push(...filterSelectableAndCustomItems(item.items));
     }
 
-    if (isItem(item) || isCustomItem(item)) {
-      seenItems.push(item);
+    if (isItem<Meta>(item) || isCustomItem<Meta>(item)) {
+      seen.push(item);
     }
   });
 
-  return seenItems;
-};
+  return seen;
+}
+
+export function filterSelectableItems<Meta = unknown>(items: AllItems<Meta>[]): Item<Meta>[] {
+  const flattened = filterSelectableAndCustomItems(items);
+  return flattened.filter(isItem<Meta>);
+}

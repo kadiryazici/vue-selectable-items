@@ -1,7 +1,7 @@
 import type { FunctionalComponent, Ref } from 'vue';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AllItems = Item<any> | CustomItem<any> | ItemGroup;
+export type AllItems<T = any> = Item<T> | CustomItem<T> | ItemGroup;
 
 type GetComponentOrElementProps<C> = C extends string
   ? C extends keyof JSX.IntrinsicElements
@@ -47,7 +47,11 @@ export interface Item<
   wrapperProps?: WrapperProps;
   elementTag?: ElementTag;
   elementAttrs?: ElementAttrs;
-  onSelect?: (meta: Meta) => void;
+  onSelect?: (
+    thisMeta: Meta,
+    thisItem: Item<Meta, WrapperComponent, ElementTag>,
+    thisEl: HTMLElement,
+  ) => void;
   meta?: Meta;
 }
 
@@ -58,9 +62,9 @@ export interface CustomItem<Meta = unknown> {
   meta?: Meta;
 }
 
-export type OnFocusHook = (meta: unknown, el: HTMLElement) => void;
-export type OnUnfocusHook = (meta: unknown, el: HTMLElement) => void;
-export type OnSelectHook = (meta: unknown, el: HTMLElement) => void;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type Hook = (meta: any, item: Item<any>, el: HTMLElement) => void;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type CustomItemOptions<Meta = unknown> = Omit<CustomItem<Meta>, 'type'>;
 export type ItemOptions<Meta = unknown, WrapperComponent = unknown, ElementTag = unknown> = Omit<

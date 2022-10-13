@@ -1,3 +1,26 @@
+# 0.2.0
+
+  - (Component): `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
+
+  - (Component): `SelectableItems` component now exposes `Context` as template ref.
+
+  - (Lib): Now all events has 3 arguments; Meta, Item and HTMLElement.
+
+  - (Lib): New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
+
+  - (Types): Now `onSelect` property of an item has correct type support.
+
+- ### Breaking Changes
+  - (Context): `getItemMetaDataByKey` renamed as `getItemMetaByKey` with generic support. `getItemMetabyKey<Meta = unknown>`
+
+  - (Context): `getSelectableItems` now supports generic. `getSelectableItems<Meta = unknown>`
+
+  - (Context): `getFocusedElement` renamed as `getFocusedItemElement`
+
+  - (Context): `onMouseEnter` renamed as `onHover`
+
+<br>
+
 # 0.1.1
 
 - Updated readme.
