@@ -3,7 +3,7 @@ import type { Component } from 'vue';
 export interface Example {
   title: string;
   id: string;
-  code?: string;
+  repoLink: string;
   component: Component;
 }
 
