@@ -9,7 +9,7 @@ interface Props {
 
 interface Emits {
   (e: 'update:activeExample', id: string): void;
-  (e: 'clickSourceCode'): void;
+  (e: 'clickSourceCode', link: string): void;
 }
 
 const props = withDefaults(defineProps<Props>(), { examples: () => [] });
@@ -28,7 +28,7 @@ function handleItemClick(example: Example) {
       :text="example.title"
       :active="props.activeExample === example.id"
       @click="() => handleItemClick(example)"
-      @clickSourceCode="$emit('clickSourceCode')"
+      @clickSourceCode="$emit('clickSourceCode', example.repoLink)"
     />
   </ul>
 </template>

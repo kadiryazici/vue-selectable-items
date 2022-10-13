@@ -7,13 +7,17 @@ const activeExampleId = ref(examples[0].id);
 const activeExample = computed(() =>
   examples.find((example) => example.id === activeExampleId.value),
 );
+
+function handleClickSourceCode(link: string) {
+  window.open(link, '_blank');
+}
 </script>
 
 <template>
   <TheSidebar
     v-model:activeExample="activeExampleId"
     :examples="examples"
-    @clickSourceCode="({}.constructor.constructor('return console.log')()(activeExample?.code))"
+    @clickSourceCode="handleClickSourceCode"
   />
 
   <div class="site-container">
