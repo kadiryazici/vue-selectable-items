@@ -44,4 +44,10 @@ const prodConfig: UserConfigExport = {
 };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => (mode === 'production' ? prodConfig : devConfig));
+export default defineConfig(({ mode }) => {
+  if (mode === 'production') return prodConfig;
+  if (mode === 'development') return devConfig;
+  if (mode === 'staging') return { ...devConfig, base: '/vue-selectable-items' };
+
+  throw new Error('Invalid mode');
+});
