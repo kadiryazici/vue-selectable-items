@@ -1,3 +1,16 @@
+# 0.2.1
+  - **[Bug ix]:** If current focused item key doesn't exist anymore, focus will be resetted.
+
+  - **[Feature]:** Now `ItemOptions` have `disabled` option. Disabled items have `vue-selectable-items-item-disabled` class.
+    ```ts
+    item({
+      key: 'myKey',
+      disabled: true
+    })
+    ```
+
+<br>
+
 # 0.2.0
 
   - **[Component]:** `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
