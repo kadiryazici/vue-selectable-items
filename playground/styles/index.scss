@@ -154,7 +154,12 @@ body,
     text-align: left;
     width: 100%;
 
-    &:hover,
+    &-disabled {
+      color: rgb(113, 113, 113);
+      cursor: not-allowed;
+    }
+
+    &:not(.vue-selectable-items-item-disabled):hover,
     &-focused {
       background-color: rgba(102, 102, 102, 0.253);
     }

@@ -1,23 +1,34 @@
+# 0.2.1
+  - **[Bug ix]:** If current focused item key doesn't exist anymore, focus will be resetted.
+
+  - **[Feature]:** Now `ItemOptions` have `disabled` option. Disabled items have `vue-selectable-items-item-disabled` class.
+    ```ts
+    item({
+      key: 'myKey',
+      disabled: true
+    })
+    ```
+
 # 0.2.0
 
-  - (Component): `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
+  - **[Component]:** `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
 
-  - (Component): `SelectableItems` component now exposes `Context` as template ref.
+  - **[Component]:** `SelectableItems` component now exposes `Context` as template ref.
 
-  - (Lib): Now all events has 3 arguments; Meta, Item and HTMLElement.
+  - **[Lib]:** Now all events has 3 arguments; Meta, Item and HTMLElement.
 
-  - (Lib): New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
+  - **[Lib]:** New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
 
-  - (Types): Now `onSelect` property of an item has correct type support.
+  - **[Types]:** Now `onSelect` property of an item has correct type support.
 
 - ### Breaking Changes
-  - (Context): `getItemMetaDataByKey` renamed as `getItemMetaByKey` with generic support. `getItemMetabyKey<Meta = unknown>`
+  - **[Context]:** `getItemMetaDataByKey` renamed as `getItemMetaByKey` with generic support. `getItemMetabyKey<Meta = unknown>`
 
-  - (Context): `getSelectableItems` now supports generic. `getSelectableItems<Meta = unknown>`
+  - **[Context]:** `getSelectableItems` now supports generic. `getSelectableItems<Meta = unknown>`
 
-  - (Context): `getFocusedElement` renamed as `getFocusedItemElement`
+  - **[Context]:** `getFocusedElement` renamed as `getFocusedItemElement`
 
-  - (Context): `onMouseEnter` renamed as `onHover`
+  - **[Context]:** `onMouseEnter` renamed as `onHover`
 
 <br>
 

@@ -27,6 +27,7 @@ export function item<Meta = unknown, WrapperComponent = unknown, ElementTag = un
 ): Item<Meta, WrapperComponent, ElementTag> {
   return {
     ...options,
+    disabled: !!options.disabled,
     wrapperComponentOrTag: isObject(options.wrapperComponentOrTag)
       ? markRaw(options.wrapperComponentOrTag)
       : options.wrapperComponentOrTag,
