@@ -83,6 +83,7 @@ const items = [
   item<DemoItemMetaData>({
     meta: { text: 'BMW' },
     key: 'bmw',
+    disabled: true,
     onSelect: () => console.log('Bremın how are you'),
     ...itemOptions,
   }),

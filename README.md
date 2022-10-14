@@ -172,6 +172,22 @@ Let's explain everything step by step.
     ElementAttrs = GetAttrs<ElementTag>
   > {
     /**
+     * Required unique key for this item.
+     */
+    key: string;
+
+    /**
+     * Meta data this item will store.
+     */
+    meta: Meta;
+
+    /**
+     * Determines if item disabled.
+     * Disabled items have `vue-selectable-items-item-disabled` class.
+     */
+    disabled?: boolean;
+
+    /**
      * You can wrap this item with a Component or an element.
      * If you pass component, item will be rendered on `default` slot of given component.
      * If you pass string, that string will be used as tag. Pass `div, span` etc.

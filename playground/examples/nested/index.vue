@@ -25,11 +25,14 @@ const items = [
       text: 'New York City',
       children: [
         item<ItemMetaWithChildren>({
-          meta: { text: 'Momentos' },
+          meta: { text: 'Disabled one' },
           key: 'inner-0',
+          disabled: true,
           ...itemOptions,
         }),
         item<ItemMetaWithChildren>({
+          key: 'inner-1',
+          disabled: true,
           meta: {
             text: 'Momentos',
             children: [
@@ -50,7 +53,6 @@ const items = [
               }),
             ],
           },
-          key: 'inner-1',
           ...itemOptions,
         }),
         item<ItemMetaWithChildren>({

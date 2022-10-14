@@ -47,6 +47,7 @@ export interface Item<
   wrapperProps?: WrapperProps;
   elementTag?: ElementTag;
   elementAttrs?: ElementAttrs;
+  disabled: boolean;
   onSelect?: (
     thisMeta: Meta,
     thisItem: Item<Meta, WrapperComponent, ElementTag>,
@@ -67,10 +68,12 @@ export type Hook = (meta: any, item: Item<any>, el: HTMLElement) => void;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type CustomItemOptions<Meta = unknown> = Omit<CustomItem<Meta>, 'type'>;
+
 export type ItemOptions<Meta = unknown, WrapperComponent = unknown, ElementTag = unknown> = Omit<
   Item<Meta, WrapperComponent, ElementTag>,
-  'type'
->;
+  'type' | 'disabled'
+> & { disabled?: boolean };
+
 export type ItemGroupOptions<WrapperComponent = unknown> = Omit<
   ItemGroup<WrapperComponent>,
   'type'

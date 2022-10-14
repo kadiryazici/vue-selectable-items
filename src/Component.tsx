@@ -13,16 +13,16 @@ import {
   onBeforeUpdate,
   reactive,
   watch,
+  type ComputedRef,
 } from 'vue';
 import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType } from './constants';
-import {
-  filterSelectableAndCustomItems,
-  isComponent,
-  isCustomItem,
-  isItem,
-  isItemGroup,
-} from './functions';
+import { filterSelectableItems, isComponent, isCustomItem, isItem, isItemGroup } from './functions';
 import type { AllItems, Item, Hook } from './types';
+
+const enum Direction {
+  Next,
+  Previous,
+}
 
 export type Context = {
   focusNext(): void;
@@ -90,20 +90,29 @@ export default defineComponent({
     itemHover: null as unknown as Props['onItemHover'],
   },
   setup(props, { emit, expose }) {
-    const flattenedItems = computed(() => filterSelectableAndCustomItems(props.items));
-    const selectableItems = computed(() => flattenedItems.value.filter(isItem));
+    const selectableItems: ComputedRef<Item[]> = computed(() => filterSelectableItems(props.items));
 
-    const focusedKey = ref('');
+    const focusedItemKey = ref('');
     const focusedItemIndex = computed(() =>
-      selectableItems.value.findIndex((item) => item.key === focusedKey.value),
+      selectableItems.value.findIndex((item) => item.key === focusedItemKey.value),
     );
     const focusedItem = computed<Item | undefined>(
       () => selectableItems.value[focusedItemIndex.value],
     );
 
-    const setFocusByKey = (key: string | null | undefined) => {
-      focusedKey.value = key || '';
+    const setFocusByKey = (key?: string) => {
+      focusedItemKey.value = key || '';
     };
+
+    watch(
+      () => selectableItems.value.map((item) => item.key),
+      (keys) => {
+        const exists = keys.some((key) => key === focusedItemKey.value);
+        if (!exists) {
+          setFocusByKey();
+        }
+      },
+    );
 
     const setFocusByIndex = (index: number) => {
       const item = selectableItems.value[index];
@@ -151,7 +160,7 @@ export default defineComponent({
     });
 
     const scrollToFocusedItemElement = (options: ScrollIntoViewOptions = {}) => {
-      const el = selectableItemsElements.get(focusedKey.value);
+      const el = selectableItemsElements.get(focusedItemKey.value);
       if (el) el.scrollIntoView(options);
     };
 
@@ -166,7 +175,8 @@ export default defineComponent({
     };
 
     const handleMouseEnter = (item: Item) => {
-      if (focusedKey.value === item.key) return;
+      if (focusedItemKey.value === item.key || item.disabled) return;
+
       setFocusByKey(item.key);
       // It should be called after unFocus events
       setTimeout(() => {
@@ -176,36 +186,61 @@ export default defineComponent({
     };
 
     const handleClick = (item: Item) => {
-      selectItem(item.key);
+      if (item.disabled) return;
+
+      if (focusedItemKey.value !== item.key) {
+        setFocusByKey(item.key);
+        setTimeout(() => selectItem(item.key), 0);
+      } else {
+        selectItem(item.key);
+      }
     };
 
     const handleDOMFocus = (event: FocusEvent, item: Item<unknown>) => {
+      if (item.disabled) return;
+
       runHooks(HookType.DOMFocus, item);
       emit('itemDOMFocus', event, item.meta, item);
     };
 
-    const focusNext = () => {
-      const nextIndex =
-        focusedItemIndex.value >= selectableItems.value.length - 1 ? 0 : focusedItemIndex.value + 1;
+    const focusNextInDirection = (direction: Direction) => {
+      if (selectableItems.value.every((item) => item.disabled)) {
+        return setFocusByKey('');
+      }
 
-      setFocusByIndex(nextIndex);
+      const increment = direction === Direction.Next ? 1 : -1;
+      let nextIndex = focusedItemIndex.value;
+
+      for (;;) {
+        nextIndex += increment;
+
+        if (direction === Direction.Next) {
+          if (nextIndex >= selectableItems.value.length) {
+            nextIndex = 0;
+          }
+        } else {
+          if (nextIndex < 0) {
+            nextIndex = selectableItems.value.length - 1;
+          }
+        }
+
+        const item = selectableItems.value[nextIndex];
+        if (!item.disabled) {
+          return setFocusByIndex(nextIndex);
+        }
+      }
     };
 
-    const focusPrevious = () => {
-      const nextIndex =
-        focusedItemIndex.value <= 0 ? selectableItems.value.length - 1 : focusedItemIndex.value - 1;
+    const isFocused = (key: string) => focusedItemKey.value === key;
 
-      setFocusByIndex(nextIndex);
+    const isDisabled = (key: string) => {
+      const item = selectableItems.value.find((item) => item.key === key);
+      return item?.disabled === true;
     };
-
-    const isFocused = (key: string) => focusedKey.value === key;
 
     const selectItem = (queryKey?: string) => {
-      const key = queryKey || focusedKey.value;
-      if (!key) return;
-
-      const item = getItemByKey(selectableItems.value, key);
-      if (!item) return;
+      const item = getItemByKey(selectableItems.value, queryKey || focusedItemKey.value);
+      if (!item || item.disabled) return;
 
       const el = getItemElementByKey(item.key)!;
 
@@ -215,12 +250,12 @@ export default defineComponent({
     };
 
     const clearFocus = () => {
-      focusedKey.value = '';
+      focusedItemKey.value = '';
     };
 
     const context: Context = {
-      focusNext,
-      focusPrevious,
+      focusNext: () => focusNextInDirection(Direction.Next),
+      focusPrevious: () => focusNextInDirection(Direction.Previous),
       clearFocus,
       setFocusByKey,
       setFocusByIndex,
@@ -240,7 +275,7 @@ export default defineComponent({
       getSelectableItems<Meta = unknown>() {
         return selectableItems.value as Item<Meta>[];
       },
-      getFocusedItemElement: () => selectableItemsElements.get(focusedKey.value),
+      getFocusedItemElement: () => selectableItemsElements.get(focusedItemKey.value),
       getFocusedItem<Meta = unknown>() {
         return focusedItem.value as Item<Meta> | undefined;
       },
@@ -250,14 +285,13 @@ export default defineComponent({
     props.setup?.(context);
 
     return {
-      flattenedItems,
       selectableItems,
+      focusedItemKey,
       handleDOMFocus,
       handleMouseEnter,
       handleClick,
-      focusNext,
-      focusPrevious,
       isFocused,
+      isDisabled,
       setFocusByKey,
       selectItem,
       saveSelectableItemElement,
@@ -292,6 +326,7 @@ export default defineComponent({
                 ClassNames.Item, //
                 {
                   [ClassNames.Focused]: this.isFocused(item.key),
+                  [ClassNames.Disabled]: this.isDisabled(item.key),
                 },
               ]}
               {...(item.elementAttrs || {})}
