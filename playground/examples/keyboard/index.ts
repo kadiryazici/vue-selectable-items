@@ -1,9 +1,8 @@
 import type { Example } from '../../types';
-import { nanoid } from 'nanoid';
 import { defineAsyncComponent } from 'vue';
 
 const keyboardExample: Example = {
-  id: nanoid(),
+  id: 'example:keyboard',
   title: 'Keyboard Support',
   component: defineAsyncComponent(() => import('./index.vue')),
   repoLink:

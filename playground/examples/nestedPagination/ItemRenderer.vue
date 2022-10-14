@@ -8,7 +8,7 @@ import {
   item,
   customItem,
 } from '../../../src';
-import { SelectableItems, type Context } from '../../../src/';
+import { SelectableItems } from '../../../src/';
 import IconChevronRight from 'virtual:icons/carbon/chevron-right';
 import IconChevronLeft from 'virtual:icons/carbon/chevron-left';
 
@@ -74,22 +74,20 @@ const currentItems = computed(() => {
   return current.items;
 });
 
-function setupHandler(ctx: Context) {
-  ctx.onSelect((meta: ItemMetaWithChildren, item: Item<ItemMetaWithChildren>) => {
-    if (meta.children) {
-      stack.value = [...stack.value, { parent: item, items: meta.children }];
-      return;
-    }
+function handleSelect(meta: ItemMetaWithChildren, item: Item<ItemMetaWithChildren>) {
+  if (meta.children) {
+    stack.value = [...stack.value, { parent: item, items: meta.children }];
+    return;
+  }
 
-    emit('close');
-  });
+  emit('close');
 }
 </script>
 
 <template>
   <SelectableItems
     v-bind="$attrs"
-    :setup="setupHandler"
+    @select="handleSelect"
     :items="currentItems"
   >
     <template #render="{ text, children, back }: ItemMetaWithChildren">

@@ -97,15 +97,12 @@ function setupHandler(ctx: Context) {
     'enter',
     (event) => {
       const el = ctx.getFocusedItemElement();
-      if (document.activeElement === el) {
-        console.log('momentos');
+      if (document.activeElement === el || isFocusedOnBlackListedElement()) {
+        console.log('blocked');
         return;
       }
 
-      if (isFocusedOnBlackListedElement()) {
-        ctx.setFocusByKey();
-        return;
-      }
+      ctx.selectFocusedElement();
     },
     { input: true },
   );
@@ -135,6 +132,7 @@ function setupHandler(ctx: Context) {
   });
 
   ctx.onSelect((meta: ItemMetaWithChildren) => {
+    console.log(meta);
     expandIfHasChildren(meta);
     if (!props.preventCloseOnSelect && !meta.children) emit('close');
   });

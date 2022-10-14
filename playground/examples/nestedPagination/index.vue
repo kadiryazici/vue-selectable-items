@@ -23,28 +23,28 @@ const items = computed(() => [
     meta: {
       text: 'New York City',
       children: [
-        // item<ItemMetaWithChildren>({
-        //   meta: { text: 'Momentos' },
-        //   key: 'inner-0',
-        //   ...itemOptions,
-        // }),
+        item<ItemMetaWithChildren>({
+          meta: { text: 'Momentos' },
+          key: 'child-inner-0',
+          ...itemOptions,
+        }),
         item<ItemMetaWithChildren>({
           meta: {
             text: 'Momentos',
             children: [
               item<ItemMetaWithChildren>({
-                meta: { text: 'Momentos' },
-                key: 'inner-0',
+                meta: { text: 'Something' },
+                key: 'child-inner-0',
                 ...itemOptions,
               }),
               item<ItemMetaWithChildren>({
-                meta: { text: 'Momentos' },
-                key: 'inner-1',
+                meta: { text: 'Other thing' },
+                key: 'child-inner-1',
                 ...itemOptions,
               }),
               item<ItemMetaWithChildren>({
-                meta: { text: 'Momentos' },
-                key: 'inner-2',
+                meta: { text: 'Real Thing' },
+                key: 'child-inner-2',
                 ...itemOptions,
               }),
             ],
