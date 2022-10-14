@@ -1,9 +1,12 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import TheSidebar from './components/TheSidebar.vue';
 import examples from './examples';
 
-const activeExampleId = ref(examples[0].id);
+const activeExampleId = ref(
+  examples.find((example) => example.id === window.location.hash.slice(1))?.id || examples[0].id,
+);
+
 const activeExample = computed(() =>
   examples.find((example) => example.id === activeExampleId.value),
 );
@@ -11,6 +14,10 @@ const activeExample = computed(() =>
 function handleClickSourceCode(link: string) {
   window.open(link, '_blank');
 }
+
+watchEffect(() => {
+  window.location.hash = activeExample.value?.id || '';
+});
 </script>
 
 <template>

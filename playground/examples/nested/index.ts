@@ -1,9 +1,8 @@
 import type { Example } from '../../types';
-import { nanoid } from 'nanoid';
 import { defineAsyncComponent } from 'vue';
 
 const nestedExample: Example = {
-  id: nanoid(),
+  id: 'example:nested',
   title: 'Nested Items',
   component: defineAsyncComponent(() => import('./index.vue')),
   repoLink:

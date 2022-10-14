@@ -1,14 +1,5 @@
 <script lang="ts">
-import {
-  computed,
-  inject,
-  onMounted,
-  onUnmounted,
-  provide,
-  ref,
-  shallowRef,
-  type InjectionKey,
-} from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import type { Item, ItemGroup, CustomItem } from '../../../src';
 import { Wowerlay } from 'wowerlay';
 import useKey from '../../composables/useKey';
@@ -20,8 +11,6 @@ export type ItemMetaWithChildren = {
   children?: (Item<ItemMetaWithChildren> | ItemGroup | CustomItem<ItemMetaWithChildren>)[];
   text: string;
 };
-
-export const InjectKey: InjectionKey<boolean> = Symbol();
 
 const allowedInputTypes = ['email', 'password', 'text', 'number', 'url', 'time', 'tel'];
 
@@ -50,15 +39,14 @@ const props = withDefaults(
   defineProps<{
     items?: (Item<ItemMetaWithChildren> | ItemGroup | CustomItem<ItemMetaWithChildren>)[];
     preventCloseOnSelect?: boolean;
+    child?: boolean;
   }>(),
   {
     items: () => [],
     preventCloseOnSelect: false,
+    child: false,
   },
 );
-
-const child = inject(InjectKey, false);
-provide(InjectKey, true);
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -85,7 +73,7 @@ function setupHandler(ctx: Context) {
   useKey(
     'left',
     (event) => {
-      if (child) {
+      if (props.child) {
         event.preventDefault();
         emit('closeSelf');
       }
@@ -107,15 +95,12 @@ function setupHandler(ctx: Context) {
 
   useKey(
     'enter',
-    () => {
-      if (isFocusedOnBlackListedElement()) {
-        ctx.setFocusByKey();
+    (event) => {
+      const el = ctx.getFocusedItemElement();
+      if (document.activeElement === el || isFocusedOnBlackListedElement()) {
+        console.log('blocked');
         return;
       }
-      // We return if focused item is selectable item because by pressing enter
-      // users fire @click event and it triggeres selection
-      // so it selects twice.
-      if (document.activeElement?.hasAttribute('data-vue-selectable-items-item')) return;
 
       ctx.selectFocusedElement();
     },
@@ -147,6 +132,7 @@ function setupHandler(ctx: Context) {
   });
 
   ctx.onSelect((meta: ItemMetaWithChildren) => {
+    console.log(meta);
     expandIfHasChildren(meta);
     if (!props.preventCloseOnSelect && !meta.children) emit('close');
   });
@@ -161,29 +147,6 @@ function setupHandler(ctx: Context) {
     ctx.setFocusByKey(item.key);
   });
 }
-
-const ctx = shallowRef<Context | null>(null);
-function focusInHandler() {
-  const el = document.activeElement;
-
-  if (el == null) {
-    ctx.value?.clearFocus();
-    return;
-  }
-
-  if (
-    el.matches('[data-vue-selectable-items-item]') ||
-    el.querySelector('[data-vue-selectable-items-item]') ||
-    isInputing()
-  ) {
-    return;
-  }
-
-  ctx.value?.clearFocus();
-}
-
-onMounted(() => window.addEventListener('focusin', focusInHandler));
-onUnmounted(() => window.removeEventListener('focusin', focusInHandler));
 </script>
 
 <template>
@@ -191,12 +154,11 @@ onUnmounted(() => window.removeEventListener('focusin', focusInHandler));
     v-bind="$attrs"
     :setup="setupHandler"
     :items="props.items"
-    ref="ctx"
   >
     <template #render="{ text, children }: ItemMetaWithChildren">
       {{ text }}
       <IconChevronRight
-        style="transform: translateX(50%); margin-left: 10px; font-size: 10px"
+        style="transform: translateX(50%); margin-left: auto; font-size: 10px"
         v-if="!!children"
       />
     </template>
@@ -212,6 +174,7 @@ onUnmounted(() => window.removeEventListener('focusin', focusInHandler));
     :transition="false"
   >
     <ItemRenderer
+      child
       @closeSelf="expand = false"
       :items="focusedItem!.meta!.children!"
       @close="
