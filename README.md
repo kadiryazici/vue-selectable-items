@@ -39,15 +39,21 @@ yarn add vue-selectable-items
       meta: { title: 'New York City' },
     }),
     customItem({
-      key: 'label-1'
+      key: 'label-1',
+      name: 'label',
       meta: {
         onClick: () => doSomething(),
         someProp: 123
       },
-      name: 'label'
     }),
     itemGroup({
-
+      key: 'group-x',
+      items: [
+        item({
+          key: 'randomKey',
+          meta: { title: 'Hello' }
+        })
+      ]
     })
   ]
 </script>
@@ -161,13 +167,13 @@ Let's explain everything step by step.
 - Options
 
   ```ts
-  item<Meta = unknown>(options: ItemOptions<Meta>): Item<Meta>;
+  item<Meta, Wrapper, Element>(options: ItemOptions<Meta, Wrapper, Element>): Item<Meta, Wrapper, Element>;
 
   interface ItemOptions<
     Meta,
     WrapperComponentOrTag,
     ElementTag,
-
+    //
     WrapperProps = GetWrapperComponentOrTagProps<WrapperComponent>
     ElementAttrs = GetAttrs<ElementTag>
   > {
@@ -199,7 +205,7 @@ Let's explain everything step by step.
      * For example if you passed `Teleport`to `wrapperComponentOrTag` you can
      * pass `wrapperProps: { to: 'body' }`, and `Teleport` will use these props.
      */
-    wrapperProps?: Props;
+    wrapperProps?: WrapperProps;
 
     /**
      * Tag of selectable element, by default it is `div.vue-selectable-item`
@@ -301,7 +307,8 @@ Let's explain everything step by step.
   ```ts
   function customItem<Meta>(options: CustomItemOptions<Meta>): CustomItem<Meta>;
 
-  interface CustomItemOptions {
+  interface CustomItemOptions<Meta> {
+    key: string;
     meta: Meta;
     /**
      * This custom item will be rendered in given name as slotName.
@@ -418,10 +425,10 @@ Let's explain everything step by step.
   const items = [
     itemGroup({
       key: 'parent',
-      children: [
+      item: [
         itemGroup({
           key: 'child',
-          children: [...more]
+          item: [...more]
         })
       ]
     })
@@ -431,34 +438,35 @@ Let's explain everything step by step.
 - Options
 
   ```ts
-  function itemGroup(
-    items: (Item | CustomItem | ItemGroup)[],
-    options?: ItemGroupOptions,
-  ): ItemGroup;
+  function itemGroup<WrapperComponent>(options?: ItemGroupOptions<WrapperComponent>): ItemGroup<WrapperComponent>;
 
-  interface ItemGroupOptions {
+  interface ItemGroupOptions<WrapperComponent, Props = GetComponentOrElementProps<WrapperComponent>> {
+    key: string;
+    items: AllItems[];
     /**
      * You can wrap this group with a Component or an element.
      * If you pass component, items will be rendered on `default` slot of given component.
      * If you pass string, that string will be used as tag. Pass `div, span` etc.
      */
-    wrapperComponentOrTag?: Component | string;
+    wrapperComponentOrTag?: WrapperComponent;
 
     /**
      * Given attrs/props will be passed to `wrapperComponentOrTag`
      * For example if you passed `Teleport`to `wrapperComponentOrTag` you can
      * pass `wrapperProps: { to: 'body' }`, and `Teleport` will use these props.
      */
-    wrapperProps?: Record<string, unknown>;
+    wrapperProps?: Props;
   }
   ```
 
-## Context
+## Context
 
 Context is an object of functions, you can access it via `setup` prop and `template ref`.
 Both `setup` and `template ref` has their own advantages.
 
-- In setup phase, you can create watchers to watch changes, but you lose freedom but you can assign `ctx` to a local variable to access in your own component instance.
+- Setup Function
+
+  In setup phase, you can create watchers to watch changes, but you lose freedom but you can assign `ctx` to a local variable to access in your own component instance.
 
   ```html
     <script lang="ts" setup>
@@ -495,6 +503,7 @@ Both `setup` and `template ref` has their own advantages.
   ```
 
 - Template Ref
+
   With template ref you can assign context directly to local variable, but you cannot create reactive effects and it will be only available after mount.
 
   You can still control behavior of SelectableItems.
