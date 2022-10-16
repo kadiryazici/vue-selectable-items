@@ -1,3 +1,8 @@
+# 0.2.2
+  - Updated readme
+
+<br>
+
 # 0.2.1
   - **[Bug ix]:** If current focused item key doesn't exist anymore, focus will be resetted.
 
