@@ -285,8 +285,6 @@ export default defineComponent({
     props.setup?.(context);
 
     return {
-      selectableItems,
-      focusedItemKey,
       handleDOMFocus,
       handleMouseEnter,
       handleClick,
