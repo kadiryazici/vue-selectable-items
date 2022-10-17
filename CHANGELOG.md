@@ -1,3 +1,8 @@
+# 0.2.3
+  - Removed unused variables from setup return.
+
+<br>
+
 # 0.2.2
   - Updated readme
 
