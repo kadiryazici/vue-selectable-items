@@ -65,6 +65,10 @@ export interface CustomItem<Meta = unknown> {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Hook = (meta: any, item: Item<any>, el: HTMLElement) => void;
+export type SelectHook = Hook;
+export type UnfocusHook = Hook;
+export type FocusHook = (meta: any, item: Item<any>, el: HTMLElement, byPointer: boolean) => void;
+export type DOMFocusHook = (event: FocusEvent, meta: any, item: Item<any>, el: HTMLElement) => void;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type CustomItemOptions<Meta = unknown> = Omit<CustomItem<Meta>, 'type'>;

@@ -17,7 +17,15 @@ import {
 } from 'vue';
 import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType } from './constants';
 import { filterSelectableItems, isComponent, isCustomItem, isItem, isItemGroup } from './functions';
-import type { AllItems, Item, Hook } from './types';
+import type {
+  AllItems,
+  Item,
+  Hook,
+  FocusHook,
+  SelectHook,
+  UnfocusHook,
+  DOMFocusHook,
+} from './types';
 
 const enum Direction {
   Next,
@@ -31,9 +39,8 @@ export type Context = {
   setFocusByKey(key?: string | null | undefined): void;
   setFocusByIndex(index: number): void;
   onSelect(fn: Hook): void;
-  onFocus(fn: Hook): void;
+  onFocus(fn: FocusHook): void;
   onUnfocus(fn: Hook): void;
-  onHover(fn: Hook): void;
   onDOMFocus(fn: Hook): void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getItemMetaByKey<Meta = any>(key: string): Meta | undefined;
@@ -53,11 +60,10 @@ export interface Props {
   setup(context: Context): void;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  onSelect(meta: any, item: Item<any>, el: HTMLElement): void;
-  onItemFocus(meta: any, item: Item<any>, el: HTMLElement): void;
-  onItemUnfocus(meta: any, item: Item<any>, el: HTMLElement): void;
-  onItemDOMFocus(e: FocusEvent, meta: any, item: Item<any>): void;
-  onItemHover(meta: any, item: Item<any>, el: HTMLElement): void;
+  onSelect: SelectHook;
+  onItemFocus: FocusHook;
+  onItemUnfocus: UnfocusHook;
+  onItemDOMFocus: DOMFocusHook;
   /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
@@ -87,7 +93,6 @@ export default defineComponent({
     itemFocus: null as unknown as Props['onItemFocus'],
     itemUnfocus: null as unknown as Props['onItemUnfocus'],
     itemDOMFocus: null as unknown as Props['onItemDOMFocus'],
-    itemHover: null as unknown as Props['onItemHover'],
   },
   setup(props, { emit, expose }) {
     const selectableItems: ComputedRef<Item[]> = computed(() => filterSelectableItems(props.items));
@@ -100,8 +105,53 @@ export default defineComponent({
       () => selectableItems.value[focusedItemIndex.value],
     );
 
-    const setFocusByKey = (key?: string) => {
-      focusedItemKey.value = key || '';
+    const hooks = {
+      [HookType.Focus]: new Set<FocusHook>(),
+      [HookType.Select]: new Set<Hook>(),
+      [HookType.Unfocus]: new Set<Hook>(),
+      [HookType.DOMFocus]: new Set<Hook>(),
+    };
+
+    const onFocus = (fn: FocusHook) => hooks[HookType.Focus].add(fn);
+    const onSelect = (fn: Hook) => hooks[HookType.Select].add(fn);
+    const onUnfocus = (fn: Hook) => hooks[HookType.Unfocus].add(fn);
+    const onDOMFocus = (fn: Hook) => hooks[HookType.DOMFocus].add(fn);
+
+    const runHooks = (type: HookType, item: Item, byPointer = false) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const el = selectableItemsElements.get(item.key)!;
+      if (type === HookType.Focus) {
+        hooks[type].forEach((hook) => hook(item.meta, item, el, byPointer));
+      } else {
+        hooks[type].forEach((hook) => hook(item.meta, item, el));
+      }
+    };
+
+    function handleFocusedItemChange(to?: Item, from?: Item, byPointer = false) {
+      if (to?.key === from?.key) return;
+
+      if (isItem(from)) {
+        runHooks(HookType.Unfocus, from);
+        emit('itemUnfocus', from.meta, from, getItemElementByKey(from.key)!);
+      }
+
+      if (isItem(to)) {
+        runHooks(HookType.Focus, to, byPointer);
+        emit('itemFocus', to.meta, to, getItemElementByKey(to.key)!, byPointer);
+      }
+    }
+
+    const setFocusByKey = (key: string, byPointer = false) => {
+      const newKey = key || '';
+      const newItem = getItemByKey(selectableItems.value, newKey);
+
+      if (newItem?.disabled) return;
+
+      const oldItem = getItemByKey(selectableItems.value, focusedItemKey.value);
+
+      focusedItemKey.value = newKey;
+
+      handleFocusedItemChange(newItem, oldItem, byPointer);
     };
 
     watch(
@@ -109,7 +159,7 @@ export default defineComponent({
       (keys) => {
         const exists = keys.some((key) => key === focusedItemKey.value);
         if (!exists) {
-          setFocusByKey();
+          setFocusByKey('');
         }
       },
     );
@@ -127,38 +177,6 @@ export default defineComponent({
     const saveSelectableItemElement = (key: string, element: HTMLElement) =>
       selectableItemsElements.set(key, element);
 
-    const hooks = new Map([
-      [HookType.Focus, new Set<Hook>()],
-      [HookType.Hover, new Set<Hook>()],
-      [HookType.Select, new Set<Hook>()],
-      [HookType.Unfocus, new Set<Hook>()],
-      [HookType.DOMFocus, new Set<Hook>()],
-    ]);
-
-    const onFocus = (fn: Hook) => hooks.get(HookType.Focus)!.add(fn);
-    const onSelect = (fn: Hook) => hooks.get(HookType.Select)!.add(fn);
-    const onUnfocus = (fn: Hook) => hooks.get(HookType.Unfocus)!.add(fn);
-    const onHover = (fn: Hook) => hooks.get(HookType.Hover)!.add(fn);
-    const onDOMFocus = (fn: Hook) => hooks.get(HookType.DOMFocus)!.add(fn);
-
-    const runHooks = (type: HookType, item: Item) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const el = selectableItemsElements.get(item.key)!;
-      hooks.get(type)?.forEach((hook) => hook(item.meta, item, el));
-    };
-
-    watch(focusedItem, (to, from) => {
-      if (isItem(from)) {
-        runHooks(HookType.Unfocus, from);
-        emit('itemUnfocus', from.meta, from, getItemElementByKey(from.key)!);
-      }
-
-      if (isItem(to)) {
-        runHooks(HookType.Focus, to);
-        emit('itemFocus', to.meta, to, getItemElementByKey(to.key)!);
-      }
-    });
-
     const scrollToFocusedItemElement = (options: ScrollIntoViewOptions = {}) => {
       const el = selectableItemsElements.get(focusedItemKey.value);
       if (el) el.scrollIntoView(options);
@@ -175,14 +193,7 @@ export default defineComponent({
     };
 
     const handleMouseEnter = (item: Item) => {
-      if (focusedItemKey.value === item.key || item.disabled) return;
-
-      setFocusByKey(item.key);
-      // It should be called after unFocus events
-      setTimeout(() => {
-        runHooks(HookType.Hover, item);
-        emit('itemHover', item.meta, item, getItemElementByKey(item.key)!);
-      });
+      setFocusByKey(item.key, true);
     };
 
     const handleClick = (item: Item) => {
@@ -200,7 +211,7 @@ export default defineComponent({
       if (item.disabled) return;
 
       runHooks(HookType.DOMFocus, item);
-      emit('itemDOMFocus', event, item.meta, item);
+      emit('itemDOMFocus', event, item.meta, item, getItemElementByKey(item.key)!);
     };
 
     const focusNextInDirection = (direction: Direction) => {
@@ -238,8 +249,8 @@ export default defineComponent({
       return item?.disabled === true;
     };
 
-    const selectItem = (queryKey?: string) => {
-      const item = getItemByKey(selectableItems.value, queryKey || focusedItemKey.value);
+    const selectItem = (key: string) => {
+      const item = getItemByKey(selectableItems.value, key);
       if (!item || item.disabled) return;
 
       const el = getItemElementByKey(item.key)!;
@@ -249,23 +260,18 @@ export default defineComponent({
       emit('select', item.meta, item, el);
     };
 
-    const clearFocus = () => {
-      focusedItemKey.value = '';
-    };
-
     const context: Context = {
       focusNext: () => focusNextInDirection(Direction.Next),
       focusPrevious: () => focusNextInDirection(Direction.Previous),
-      clearFocus,
+      clearFocus: () => setFocusByKey(''),
       setFocusByKey,
       setFocusByIndex,
       onSelect,
       onFocus,
       onUnfocus,
-      onHover,
       onDOMFocus,
       getSelectableItemCount: () => selectableItems.value.length,
-      selectFocusedElement: () => selectItem(),
+      selectFocusedElement: () => selectItem(focusedItemKey.value),
       getItemElementByIndex,
       getItemElementByKey,
       scrollToFocusedItemElement,
@@ -369,6 +375,6 @@ export default defineComponent({
 
     if (this.noWrapperElement) return h(Fragment, {}, rendered);
 
-    return h('div', { class: ClassNames.Wrapper }, rendered);
+    return h('div', mergeProps({ class: ClassNames.Wrapper }, this.$attrs), rendered);
   },
 });
