@@ -1,4 +1,4 @@
-# 0.2.3
+# 0.3.0
   - **[Feature]:** Now `focus` event/hook has a fourth parameter `byPointer: boolean`. If user is focused to an item by pointer this parameter will be `true` otherwise `false`.
 
   - **[Bug fix]:** Now if focused item is removed from items array, focusedItem will be resetted instead of keeping removed item's key.
