@@ -1,17 +1,34 @@
+# 0.3.0
+### Features
+
+   - Now `focus` event/hook has a fourth parameter `byPointer: boolean`. If user is focused to an item by pointer this parameter will be `true` otherwise `false`.
+
+  - Now `DOMFocus` event has four arguments. Frst argument of `DomFocus` event is `Focus Event`, rest is `Meta, Item<Meta>, HTMLElement`. 
+
+### Breaking Changes
+  - Removed `itemHover` event and `Context['onHover']` hook, use focus with fourth parameter instead.
+ 
+<br>
+
 # 0.2.3
+
+### Project Refactors
+
   - Removed unused variables from setup return.
 
 <br>
 
 # 0.2.2
+### Doc Updates
+
   - Updated readme
 
 <br>
 
 # 0.2.1
-  - **[Bug ix]:** If current focused item key doesn't exist anymore, focus will be resetted.
 
-  - **[Feature]:** Now `ItemOptions` have `disabled` option. Disabled items have `vue-selectable-items-item-disabled` class.
+### Features
+  - Now `ItemOptions` have `disabled` option. Disabled items have `vue-selectable-items-item-disabled` class.
     ```ts
     item({
       key: 'myKey',
@@ -19,32 +36,37 @@
     })
     ```
 
+### Bug Fixes
+  - If current focused item key doesn't exist anymore, focus will be resetted.
 <br>
 
 # 0.2.0
 
-  - **[Component]:** `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
+### Features
 
-  - **[Component]:** `SelectableItems` component now exposes `Context` as template ref.
+  - `itemFocus`, `itemUnfocus`, `itemDOMFocus`, `itemHover` emits are added.
 
-  - **[Lib]:** Now all events has 3 arguments; Meta, Item and HTMLElement.
+  - `SelectableItems` component now exposes `Context` as template ref.
 
-  - **[Lib]:** New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
+  - Now all events has 3 arguments; Meta, Item and HTMLElement.
 
-  - **[Types]:** Now `onSelect` property of an item has correct type support.
+  - New exported functions `filterSelectableAndCustomItems` and `filterSelectableItems`.
+
+  - Now `onSelect` property of an item has correct type support.
 
 - ### Breaking Changes
-  - **[Context]:** `getItemMetaDataByKey` renamed as `getItemMetaByKey` with generic support. `getItemMetabyKey<Meta = unknown>`
+  - `getItemMetaDataByKey` renamed as `getItemMetaByKey` with generic support. `getItemMetabyKey<Meta = unknown>`
 
-  - **[Context]:** `getSelectableItems` now supports generic. `getSelectableItems<Meta = unknown>`
+  - `getSelectableItems` now supports generic. `getSelectableItems<Meta = unknown>`
 
-  - **[Context]:** `getFocusedElement` renamed as `getFocusedItemElement`
+  - `getFocusedElement` renamed as `getFocusedItemElement`
 
-  - **[Context]:** `onMouseEnter` renamed as `onHover`
+  - `onMouseEnter` renamed as `onHover`
 
 <br>
 
 # 0.1.1
+### Doc Updates
 
 - Updated readme.
 
