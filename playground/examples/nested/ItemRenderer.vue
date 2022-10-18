@@ -1,9 +1,9 @@
 <script lang="ts">
-import { computed, ref, shallowRef } from 'vue';
+import { ref, shallowRef } from 'vue';
 import type { Item, ItemGroup, CustomItem } from '../../../src';
 import { Wowerlay } from 'wowerlay';
 import useKey from '../../composables/useKey';
-import { SelectableItems, type Context, filterSelectableItems } from '../../../src/';
+import { SelectableItems, type Context } from '../../../src/';
 import IconChevronRight from 'virtual:icons/carbon/chevron-right';
 import ItemRenderer from './ItemRenderer.vue';
 
@@ -28,6 +28,26 @@ export const isFocusedOnBlackListedElement = () =>
   document.activeElement instanceof HTMLSelectElement ||
   (document.activeElement instanceof HTMLInputElement &&
     !allowedInputTypes.includes(document.activeElement.type));
+
+export const createFocusRestorer = (element: HTMLElement) => {
+  const elementScrollPositions = [] as { target: HTMLElement; x: number; y: number }[];
+  const rootScrollingElement = document.scrollingElement || document.documentElement;
+  let parent = element.parentNode as HTMLElement | null;
+
+  while (parent && parent !== rootScrollingElement) {
+    if (parent.offsetHeight < parent.scrollHeight || parent.offsetWidth < parent.scrollWidth) {
+      elementScrollPositions.push({ target: parent, x: parent.scrollLeft, y: parent.scrollTop });
+    }
+    parent = parent.parentNode as HTMLElement | null;
+  }
+
+  return () => {
+    for (const { target, x, y } of elementScrollPositions) {
+      target.scrollLeft = x;
+      target.scrollTop = y;
+    }
+  };
+};
 
 export default {
   inheritAttrs: false,
@@ -57,13 +77,7 @@ const focusedElement = ref<null | HTMLElement>(null);
 
 const expand = ref(false);
 const focusedItem = shallowRef<Item<ItemMetaWithChildren> | undefined>();
-
-const focusedItemHasChildren = computed(() => {
-  if (focusedItem.value == null) return false;
-
-  const meta = focusedItem.value.meta;
-  return meta && Array.isArray(meta.children) && meta.children.length > 0;
-});
+const focusedItemHasChildren = ref(false);
 
 function setupHandler(ctx: Context) {
   useKey('esc', () => emit('close'));
@@ -107,12 +121,22 @@ function setupHandler(ctx: Context) {
     { input: true },
   );
 
-  ctx.onFocus((_meta, item, el) => {
+  ctx.onFocus((meta, item, el, byPointer) => {
     focusedElement.value = el;
     focusedItem.value = item;
+    focusedItemHasChildren.value = Array.isArray(meta?.children);
+
+    if (byPointer) {
+      expandIfHasChildren(meta);
+    }
 
     if (!isInputing()) {
+      const restore = createFocusRestorer(el);
       el.focus();
+
+      if (byPointer) {
+        restore();
+      }
     } else {
       el.scrollIntoView({
         block: 'center',
@@ -121,18 +145,13 @@ function setupHandler(ctx: Context) {
     }
   });
 
-  const expandIfHasChildren = (meta: ItemMetaWithChildren) => {
-    if (meta && Array.isArray(meta.children) && filterSelectableItems(meta.children).length > 0) {
+  const expandIfHasChildren = (meta?: ItemMetaWithChildren) => {
+    if (Array.isArray(meta?.children)) {
       expand.value = true;
     }
   };
 
-  ctx.onHover((meta) => {
-    expandIfHasChildren(meta);
-  });
-
   ctx.onSelect((meta: ItemMetaWithChildren) => {
-    console.log(meta);
     expandIfHasChildren(meta);
     if (!props.preventCloseOnSelect && !meta.children) emit('close');
   });

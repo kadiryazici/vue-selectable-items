@@ -8,7 +8,6 @@ export enum HookType {
   Focus,
   Unfocus,
   Select,
-  Hover,
   DOMFocus,
 }
 
