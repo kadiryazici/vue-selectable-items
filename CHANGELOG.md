@@ -1,15 +1,24 @@
 # 0.2.3
-  - Removed unused variables from setup return.
+  - **[Feature]:** Now `focus` event/hook has a fourth parameter `byPointer: boolean`. If user is focused to an item by pointer this parameter will be `true` otherwise `false`.
+
+  - **[Bug fix]:** Now if focused item is removed from items array, focusedItem will be resetted instead of keeping removed item's key.
+### Breaking Changes
+  - **[Removal]:** Removed `itemHover` event and `Context['onHover']` hook, use focus with fourth parameter instead.
+
+<br>
+
+# 0.2.3
+  - **[Removal]:** Removed unused variables from setup return.
 
 <br>
 
 # 0.2.2
-  - Updated readme
+  - **[Docs]:** Updated readme
 
 <br>
 
 # 0.2.1
-  - **[Bug ix]:** If current focused item key doesn't exist anymore, focus will be resetted.
+  - **[Bug fix]:** If current focused item key doesn't exist anymore, focus will be resetted.
 
   - **[Feature]:** Now `ItemOptions` have `disabled` option. Disabled items have `vue-selectable-items-item-disabled` class.
     ```ts
