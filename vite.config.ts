@@ -1,9 +1,9 @@
-import { defineConfig, type UserConfigExport } from 'vite';
 import VueJSX from '@vitejs/plugin-vue-jsx';
 import path from 'path';
 import ViteDTS from 'vite-plugin-dts';
 import Vue from '@vitejs/plugin-vue';
 import Icons from 'unplugin-icons/vite';
+import { defineConfig, type UserConfigExport } from 'vitest/config';
 
 const devConfig: UserConfigExport = {
   plugins: [
@@ -43,9 +43,20 @@ const prodConfig: UserConfigExport = {
   },
 };
 
+const testConfig: UserConfigExport = {
+  plugins: [VueJSX(), Vue()],
+  test: {
+    environment: 'jsdom',
+    transformMode: {
+      web: [/\.[jt]sx$/],
+    },
+  },
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   if (mode === 'production') return prodConfig;
+  if (mode === 'test') return testConfig;
   if (mode === 'development') return devConfig;
   if (mode === 'staging') return { ...devConfig, base: '/vue-selectable-items' };
 
