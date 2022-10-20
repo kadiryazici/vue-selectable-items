@@ -1,4 +1,5 @@
 import type { FunctionalComponent, Ref } from 'vue';
+import type { HookType } from './constants';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AllItems<T = any> = Item<T> | CustomItem<T> | ItemGroup;
@@ -70,6 +71,13 @@ export type UnfocusHook = Hook;
 export type FocusHook = (meta: any, item: Item<any>, el: HTMLElement, byPointer: boolean) => void;
 export type DOMFocusHook = (event: FocusEvent, meta: any, item: Item<any>, el: HTMLElement) => void;
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+export interface HookFnMap {
+  [HookType.DOMFocus]: DOMFocusHook;
+  [HookType.Select]: SelectHook;
+  [HookType.Focus]: FocusHook;
+  [HookType.Unfocus]: UnfocusHook;
+}
 
 export type CustomItemOptions<Meta = unknown> = Omit<CustomItem<Meta>, 'type'>;
 

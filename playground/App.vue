@@ -3,7 +3,7 @@ import { computed, ref, watchEffect } from 'vue';
 import TheSidebar from './components/TheSidebar.vue';
 import examples from './examples';
 
-const activeExampleId = ref(
+const activeExampleId = ref<string>(
   examples.find((example) => example.id === window.location.hash.slice(1))?.id || examples[0].id,
 );
 

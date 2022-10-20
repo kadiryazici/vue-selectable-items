@@ -48,7 +48,7 @@ function setupHandler(ctx: Context) {
       // so it selects twice.
       if (document.activeElement?.hasAttribute('data-vue-selectable-items-item')) return;
 
-      ctx.selectFocusedElement();
+      ctx.selectFocusedItem();
     },
     { input: true },
   );

@@ -127,7 +127,7 @@ describe('main tests', () => {
     expect(onItemDOMFocusSpy).not.toHaveBeenCalled();
     expect(onSelectSpy).not.toHaveBeenCalled();
 
-    context.selectFocusedElement();
+    context.selectFocusedItem();
     expect(onSelectSpy).toHaveBeenCalled();
     expect(context.getFocusedItemElement()).toBeInstanceOf(HTMLElement);
     expect(context.getFocusedItemElement().classList.contains('vue-selectable-items-item')).toBe(
@@ -186,7 +186,7 @@ describe('main tests', () => {
       await wrapper.setProps({ items });
       context.clearFocus();
       context.focusNext();
-      context.selectFocusedElement();
+      context.selectFocusedItem();
       expect(itemOnSelectSpy).toHaveBeenCalled();
     }
   });
