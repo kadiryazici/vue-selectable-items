@@ -116,7 +116,7 @@ function setupHandler(ctx: Context) {
         return;
       }
 
-      ctx.selectFocusedElement();
+      ctx.selectFocusedItem();
     },
     { input: true },
   );
