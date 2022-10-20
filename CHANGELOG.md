@@ -1,3 +1,10 @@
+# 0.3.1
+### Bug Fixes
+  - Fixed types of hooks/events.
+  - `Context['selectFocusedElement']` was incorrect name, fixed to correct one `Context['selectFocusedItem']`
+ 
+<br>
+
 # 0.3.0
 ### Features
 
