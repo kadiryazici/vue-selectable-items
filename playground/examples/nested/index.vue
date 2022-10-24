@@ -4,21 +4,10 @@ import ItemRenderer, { type ItemMetaWithChildren } from './ItemRenderer.vue';
 import { Wowerlay } from 'wowerlay';
 import { ref } from 'vue';
 
-const itemOptions = {
-  elementTag: 'button',
-  elementAttrs: {
-    tabindex: 0,
-    style: {
-      outline: 'none',
-    },
-  },
-};
-
 const items = [
   item<ItemMetaWithChildren>({
     meta: { text: 'Washington' },
     key: 'washington',
-    ...itemOptions,
   }),
   item<ItemMetaWithChildren>({
     meta: {
@@ -28,7 +17,6 @@ const items = [
           meta: { text: 'Disabled one' },
           key: 'inner-0',
           disabled: true,
-          ...itemOptions,
         }),
         item<ItemMetaWithChildren>({
           key: 'inner-1',
@@ -39,42 +27,34 @@ const items = [
               item<ItemMetaWithChildren>({
                 meta: { text: 'Momentos' },
                 key: 'inner-0',
-                ...itemOptions,
               }),
               item<ItemMetaWithChildren>({
                 meta: { text: 'Momentos' },
                 key: 'inner-1',
-                ...itemOptions,
               }),
               item<ItemMetaWithChildren>({
                 meta: { text: 'Momentos' },
                 key: 'inner-2',
-                ...itemOptions,
               }),
             ],
           },
-          ...itemOptions,
         }),
         item<ItemMetaWithChildren>({
           meta: { text: 'Momentos' },
           key: 'inner-2',
-          ...itemOptions,
         }),
       ],
     },
     key: 'nwc',
-    ...itemOptions,
   }),
   item<ItemMetaWithChildren>({
     meta: { text: 'Istanbul' },
     key: 'Istanbul',
-    ...itemOptions,
   }),
   item<ItemMetaWithChildren>({
     meta: { text: 'BMW' },
     key: 'bmw',
     onSelect: () => console.log('Bremın how are you'),
-    ...itemOptions,
   }),
 ];
 

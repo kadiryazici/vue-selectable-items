@@ -16,7 +16,17 @@ import {
   type ComputedRef,
 } from 'vue';
 import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType } from './constants';
-import { filterSelectableItems, isComponent, isCustomItem, isItem, isItemGroup } from './functions';
+import {
+  filterSelectableItems,
+  hasOwn,
+  isComponent,
+  isComponentOrTag,
+  isCustomItem,
+  isItem,
+  isItemGroup,
+  isObject,
+  isOr,
+} from './functions';
 import type {
   AllItems,
   Item,
@@ -25,6 +35,8 @@ import type {
   UnfocusHook,
   DOMFocusHook,
   HookFnMap,
+  ItemDefaults,
+  NullablePartial,
 } from './types';
 
 const enum Direction {
@@ -58,6 +70,7 @@ export interface Props {
   noWrapperElement: boolean;
   items: AllItems[];
   setup(context: Context): void;
+  itemDefaults: NullablePartial<ItemDefaults>;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   onSelect: SelectHook;
@@ -70,6 +83,9 @@ export interface Props {
 function getItemByKey<Meta>(items: Item<Meta>[], key: Item['key']) {
   return items.find((item) => item.key === key);
 }
+
+// For saving bytes
+const wrapperComponentOrTag = 'wrapperComponentOrTag';
 
 export default defineComponent({
   name: 'SelectableItems',
@@ -86,6 +102,10 @@ export default defineComponent({
     setup: {
       type: Function as PropType<Props['setup']>,
       default: null,
+    },
+    itemDefaults: {
+      type: Object as PropType<Props['itemDefaults']>,
+      default: () => ({}),
     },
   },
   emits: {
@@ -303,7 +323,7 @@ export default defineComponent({
     const renderer = (items: AllItems[]): VNodeChild[] =>
       renderList(items, (item) => {
         if (isItemGroup(item)) {
-          const Wrapper = item.wrapperComponentOrTag || Fragment;
+          const Wrapper = item[wrapperComponentOrTag] || Fragment;
           const props = item.wrapperProps || {};
 
           const children = renderer(item.items);
@@ -319,10 +339,19 @@ export default defineComponent({
         }
 
         if (isItem(item)) {
-          const Tag = ((typeof item.elementTag === 'string' && item.elementTag) || 'div') as 'div';
+          const ItemTag = isOr(
+            item.elementTag || this.itemDefaults.elementTag,
+            isComponentOrTag,
+            'div',
+          ) as /* For type checking */ 'div';
+
+          const itemProps = mergeProps(
+            isOr(this.itemDefaults.elementAttrs!, isObject, {}),
+            isOr(item.elementAttrs as Record<string, never>, isObject, {}),
+          );
 
           const vNodeItem = (
-            <Tag
+            <ItemTag
               data-vue-selectable-items-item
               class={[
                 ClassNames.Item, //
@@ -331,25 +360,28 @@ export default defineComponent({
                   [ClassNames.Disabled]: this.isDisabled(item.key),
                 },
               ]}
-              {...(item.elementAttrs || {})}
+              {...itemProps}
               onMouseenter={() => this.handleMouseEnter(item)}
               onFocus={(event) => this.handleDOMFocus(event, item)}
               onClick={() => this.handleClick(item)}
               ref={(instance) => this.saveSelectableItemElement(item.key, instance as HTMLElement)}
             >
               {this.$slots[DEFAULT_ITEM_SLOT_NAME]?.(item.meta)}
-            </Tag>
+            </ItemTag>
           );
 
-          if (
-            isComponent(item.wrapperComponentOrTag) ||
-            typeof item.wrapperComponentOrTag === 'string'
-          ) {
+          const Wrapper = item[wrapperComponentOrTag] || this.itemDefaults[wrapperComponentOrTag];
+          if (isComponentOrTag(Wrapper)) {
+            const wrapperProps = mergeProps(
+              isOr(this.itemDefaults.wrapperProps!, isObject, {}),
+              isOr(item.wrapperProps!, isObject, {}),
+              { key: item.key },
+            );
+
             return h(
-              // @ts-expect-error dynamic component
-              item.wrapperComponentOrTag,
-              mergeProps({ key: item.key }, item.wrapperProps || {}),
-              isComponent(item.wrapperComponentOrTag)
+              Wrapper as 'div',
+              wrapperProps,
+              isComponent(Wrapper) //
                 ? { default: withCtx(() => [vNodeItem]) }
                 : [vNodeItem],
             );
@@ -358,7 +390,7 @@ export default defineComponent({
           return vNodeItem;
         }
 
-        if (isCustomItem(item) && Object.keys(this.$slots).includes(item.name)) {
+        if (isCustomItem(item) && hasOwn(this.$slots, item.name)) {
           return h(
             Fragment,
             { key: item.key }, //

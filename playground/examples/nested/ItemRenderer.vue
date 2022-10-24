@@ -1,11 +1,21 @@
 <script lang="ts">
 import { ref, shallowRef } from 'vue';
-import type { Item, ItemGroup, CustomItem } from '../../../src';
+import type { Item, ItemGroup, CustomItem, Context } from '../../../src';
 import { Wowerlay } from 'wowerlay';
 import useKey from '../../composables/useKey';
-import { SelectableItems, type Context } from '../../../src/';
+import { SelectableItems, createItemDefaults } from '../../../src/';
 import IconChevronRight from 'virtual:icons/carbon/chevron-right';
 import ItemRenderer from './ItemRenderer.vue';
+
+const itemDefaults = createItemDefaults({
+  elementTag: 'button',
+  elementAttrs: {
+    tabindex: 0,
+    style: {
+      outline: 'none',
+    },
+  },
+});
 
 export type ItemMetaWithChildren = {
   children?: (Item<ItemMetaWithChildren> | ItemGroup | CustomItem<ItemMetaWithChildren>)[];
@@ -162,7 +172,7 @@ function setupHandler(ctx: Context) {
     expand.value = false;
   });
 
-  ctx.onDOMFocus((meta, item, el) => {
+  ctx.onDOMFocus((_event, _meta, item) => {
     ctx.setFocusByKey(item.key);
   });
 }
@@ -173,6 +183,7 @@ function setupHandler(ctx: Context) {
     v-bind="$attrs"
     :setup="setupHandler"
     :items="props.items"
+    :itemDefaults="itemDefaults"
   >
     <template #render="{ text, children }: ItemMetaWithChildren">
       {{ text }}
