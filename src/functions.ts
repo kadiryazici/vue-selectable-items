@@ -30,7 +30,7 @@ export function item<Meta = unknown, WrapperComponent = unknown, ElementTag = un
   return {
     ...options,
     disabled: !!options.disabled,
-    wrapperComponentOrTag: isObject(options.wrapperComponentOrTag)
+    wrapperComponentOrTag: isComponent(options.wrapperComponentOrTag)
       ? markRaw(options.wrapperComponentOrTag)
       : options.wrapperComponentOrTag,
     type: ItemTypes.Item,
