@@ -80,7 +80,7 @@ export function isCustomItem<Meta = unknown>(value: unknown): value is CustomIte
 
 export function isComponent(value: unknown): value is Component {
   if (isObject(value)) {
-    return isFunction(value.setup) || isFunction('function') || isString(value.template);
+    return isFunction(value.setup) || isFunction(value.render) || isString(value.template);
   }
 
   return isFunction(value);
