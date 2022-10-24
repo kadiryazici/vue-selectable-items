@@ -1,3 +1,14 @@
+# 0.4.0
+### Features
+  - New `itemDefaults` prop to create default options for all selectable items can be created.
+
+  - New `createItemDefaults(options: ItemDefaults)` function for default options, this function will wrap `wrapperComponentOrTag` with `markRaw` if component is given.
+
+### Bug Fixes
+  - Fixed not wrapping functional components with `markRaw` in `item()` and `itemGroup()`.
+ 
+<br>
+
 # 0.3.1
 ### Bug Fixes
   - Fixed types of hooks/events.

@@ -92,6 +92,9 @@ Let's explain everything step by step.
     // onMounted, Composables, Keyboard Handling (see examples) and more setup specific stuff.
     // NOTE: This function will only run once on setup phase.
     setup?: (context: Context) => void;
+    
+    // Default options for all selectable items.
+    itemDefaults?: ItemDefaults;
   }
   ```
 
@@ -459,6 +462,51 @@ Let's explain everything step by step.
   }
   ```
 
+## Item Defaults 
+If you want to give default options to all selectable items, you can use `itemDefaults: ItemDefaults` prop.
+
+
+It is recommended to use `createItemDefaults(options?: Partial<ItemDefaults>)` function to create options because if `wrapperComponentOrTag` is component it'll be wrapped by `markRaw` not to slow performance.
+
+```html
+<script setup>
+import { createItemDefaults, SelectableItems, items } from 'vue-selectable-items';
+import MyWrapper from './MyWrapper.vue';
+
+const items = [
+  item({
+    key: 'myitem',
+    meta: 'Item 1',
+    elementAttrs: {
+      onMouseMove() {
+        console.log('Other thing');
+      }
+    }
+  })
+]
+
+const itemDefaults = createItemDefaults({
+  elementTag: 'button',
+  // All attrs and props will be merged with item specific options.
+  elementAttrs: {
+    tabindex: '0',
+    outline: 'none',
+    // This will not override local onMouseMove attr on item, they will be merged.
+    onMouseMove() { 
+      console.log('Something');
+    }
+  },
+  wrapperComponentOrTag: MyWrapper,
+  wrapperProps: {
+    someValue: true
+  }
+})
+</script>
+
+<template>
+  <SelectableItems :items="items" :itemDefaults="itemDefaults"/>
+</template>
+```
 ## Context
 
 Context is an object of functions, you can access it via `setup` prop and `template ref`.
