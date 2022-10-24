@@ -381,7 +381,7 @@ export default defineComponent({
             return h(
               Wrapper as 'div',
               wrapperProps,
-              isComponent(item[wrapperComponentOrTag])
+              isComponent(Wrapper) //
                 ? { default: withCtx(() => [vNodeItem]) }
                 : [vNodeItem],
             );
