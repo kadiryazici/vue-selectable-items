@@ -5,9 +5,11 @@ import type {
   CustomItem,
   CustomItemOptions,
   Item,
+  ItemDefaults,
   ItemGroup,
   ItemGroupOptions,
   ItemOptions,
+  NullablePartial,
 } from './types';
 
 export function itemGroup<WrapperComponent>(
@@ -15,7 +17,7 @@ export function itemGroup<WrapperComponent>(
 ): ItemGroup<WrapperComponent> {
   return {
     ...options,
-    wrapperComponentOrTag: isObject(options.wrapperComponentOrTag)
+    wrapperComponentOrTag: isComponent(options.wrapperComponentOrTag)
       ? markRaw(options.wrapperComponentOrTag)
       : options.wrapperComponentOrTag,
     type: ItemTypes.Group,
@@ -44,8 +46,24 @@ export function customItem<Meta = unknown>(options: CustomItemOptions<Meta>): Cu
 
 const getType = (value: unknown): string => Object.prototype.toString.call(value).slice(8, -1);
 
-function isObject(value: unknown): value is Record<string | number | symbol, unknown> {
+export function isObject(value: unknown): value is Record<string | number | symbol, unknown> {
   return getType(value) === 'Object';
+}
+
+export function isString(value: unknown): value is string {
+  return getType(value) === 'String';
+}
+
+export function isFunction<T = (...args: unknown[]) => unknown>(value: unknown): value is T {
+  return getType(value) === 'Function';
+}
+
+export function hasOwn(obj: unknown, property: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, property);
+}
+
+export function isComponentOrTag(value: unknown): value is Component | string {
+  return isComponent(value) || isString(value);
 }
 
 export function isItemGroup(value: unknown): value is ItemGroup {
@@ -62,10 +80,10 @@ export function isCustomItem<Meta = unknown>(value: unknown): value is CustomIte
 
 export function isComponent(value: unknown): value is Component {
   if (isObject(value)) {
-    return typeof value.setup === 'function' || typeof value.render === 'function';
+    return isFunction(value.setup) || isFunction('function') || isString(value.template);
   }
 
-  return typeof value === 'function';
+  return isFunction(value);
 }
 
 export function filterSelectableAndCustomItems<Meta = unknown>(
@@ -88,4 +106,24 @@ export function filterSelectableAndCustomItems<Meta = unknown>(
 export function filterSelectableItems<Meta = unknown>(items: AllItems<Meta>[]): Item<Meta>[] {
   const flattened = filterSelectableAndCustomItems(items);
   return flattened.filter(isItem<Meta>);
+}
+
+export function isOr<Value, Or>(value: Value, is: (value: unknown) => boolean, or: Or): Value | Or {
+  return is(value) ? value : or;
+}
+
+export function createItemDefaults({
+  elementAttrs = null,
+  elementTag = null,
+  wrapperComponentOrTag = null,
+  wrapperProps = null,
+}: NullablePartial<ItemDefaults> = {}): NullablePartial<ItemDefaults> {
+  return {
+    elementAttrs,
+    elementTag,
+    wrapperProps,
+    wrapperComponentOrTag: isComponent(wrapperComponentOrTag)
+      ? markRaw(wrapperComponentOrTag)
+      : wrapperComponentOrTag,
+  };
 }

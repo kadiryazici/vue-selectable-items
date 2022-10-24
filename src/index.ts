@@ -8,6 +8,7 @@ export {
   itemGroup,
   filterSelectableAndCustomItems,
   filterSelectableItems,
+  createItemDefaults,
 } from './functions';
 export type {
   AllItems,

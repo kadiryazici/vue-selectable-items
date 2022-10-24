@@ -1,7 +1,7 @@
 import { beforeEach, describe, vi, expect, it } from 'vitest';
-import { item } from '../src/index';
+import { createItemDefaults, item } from '../src/index';
 import { nanoid } from 'nanoid';
-import { createTextVNode, Slot } from 'vue';
+import { createTextVNode, FunctionalComponent, h, Slot } from 'vue';
 import { mount } from '@vue/test-utils';
 import SelectableItems, { Context } from '../src/Component';
 
@@ -189,5 +189,74 @@ describe('main tests', () => {
       context.selectFocusedItem();
       expect(itemOnSelectSpy).toHaveBeenCalled();
     }
+  });
+
+  it('should text default options', async () => {
+    const items = [
+      item({
+        key: 'q',
+        meta: 'Item 1',
+        elementAttrs: {
+          name: 'kadir',
+        },
+        elementTag: 'button',
+      }),
+      item({
+        key: 'w',
+        meta: 'Item 2',
+        elementAttrs: {
+          name: 'kadir',
+        },
+        elementTag: 'button',
+      }),
+    ];
+
+    const wrapper = createDefaultWrapper({
+      props: { items },
+    });
+
+    expect(
+      wrapper
+        .findAll('.vue-selectable-items-item')
+        .every((el) => el.element.getAttribute('name') === 'kadir'),
+    ).toBe(true);
+
+    const Wrapper: FunctionalComponent = (_props, { slots }) => h('div', null, slots.default());
+
+    const defaults = createItemDefaults({
+      wrapperComponentOrTag: Wrapper,
+      wrapperProps: { class: 'wrapper-yes' },
+      elementAttrs: {
+        surname: 'yazici',
+      },
+      elementTag: 'span',
+    });
+
+    await wrapper.setProps({ items, itemDefaults: defaults });
+
+    expect(
+      wrapper
+        .findAll('.vue-selectable-items-item')
+        .every(
+          (el) =>
+            el.element.getAttribute('name') === 'kadir' &&
+            el.element.getAttribute('surname') === 'yazici',
+        ),
+    ).toBe(true);
+
+    expect(
+      wrapper
+        .findAll('.vue-selectable-items-item') //
+        .every(({ element }) => {
+          const parent = element.parentElement;
+          return parent.tagName === 'DIV' && parent.classList.contains('wrapper-yes');
+        }),
+    ).toBe(true);
+
+    expect(
+      wrapper
+        .findAll('.vue-selectable-items-item') //
+        .every(({ element }) => element.tagName === 'BUTTON'),
+    ).toBe(true);
   });
 });

@@ -1,6 +1,8 @@
 import type { FunctionalComponent, Ref } from 'vue';
 import type { HookType } from './constants';
 
+export type NullablePartial<T> = { [P in keyof T]?: T[P] | undefined | null };
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AllItems<T = any> = Item<T> | CustomItem<T> | ItemGroup;
 
@@ -90,3 +92,10 @@ export type ItemGroupOptions<WrapperComponent = unknown> = Omit<
   ItemGroup<WrapperComponent>,
   'type'
 >;
+
+export type ItemDefaults = {
+  wrapperComponentOrTag: unknown;
+  wrapperProps: Record<string, unknown>;
+  elementTag: string;
+  elementAttrs: Record<string, unknown>;
+};

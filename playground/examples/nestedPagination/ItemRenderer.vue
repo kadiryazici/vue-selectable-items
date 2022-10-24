@@ -7,6 +7,7 @@ import {
   type AllItems,
   item,
   customItem,
+  createItemDefaults,
 } from '../../../src';
 import { SelectableItems } from '../../../src/';
 import IconChevronRight from 'virtual:icons/carbon/chevron-right';
@@ -17,6 +18,16 @@ export type ItemMetaWithChildren = {
   text: string;
   back?: boolean;
 };
+
+const itemDefaults = createItemDefaults({
+  elementTag: 'button',
+  elementAttrs: {
+    tabindex: 0,
+    style: {
+      outline: 'none',
+    },
+  },
+});
 
 export default {
   inheritAttrs: false,
@@ -89,6 +100,7 @@ function handleSelect(meta: ItemMetaWithChildren, item: Item<ItemMetaWithChildre
     v-bind="$attrs"
     @select="handleSelect"
     :items="currentItems"
+    :itemDefaults="itemDefaults"
   >
     <template #render="{ text, children, back }: ItemMetaWithChildren">
       <IconChevronLeft

@@ -1,9 +1,16 @@
 <script lang="ts" setup>
-import { SelectableItems, item, customItem, type Context, itemGroup } from '../../../src';
+import {
+  SelectableItems,
+  item,
+  customItem,
+  type Context,
+  itemGroup,
+  createItemDefaults,
+} from '../../../src';
 import useKey from '../../composables/useKey';
 import type { DemoItemMetaData } from '../../types';
 
-const itemOptions = {
+const itemDefaults = createItemDefaults({
   elementTag: 'button',
   elementAttrs: {
     tabindex: 0,
@@ -11,7 +18,7 @@ const itemOptions = {
       outline: 'none',
     },
   },
-} as const;
+});
 
 function setupHandler(ctx: Context) {
   useKey(
@@ -63,17 +70,14 @@ const items = [
   item<DemoItemMetaData>({
     meta: { text: 'Washington' },
     key: 'washington',
-    ...itemOptions,
   }),
   item<DemoItemMetaData>({
     meta: { text: 'New York City' },
     key: 'nwc',
-    ...itemOptions,
   }),
   item<DemoItemMetaData>({
     meta: { text: 'Istanbul' },
     key: 'Istanbul',
-    ...itemOptions,
   }),
   customItem<DemoItemMetaData>({
     meta: { text: 'Cars' },
@@ -85,12 +89,10 @@ const items = [
     key: 'bmw',
     disabled: true,
     onSelect: () => console.log('Bremın how are you'),
-    ...itemOptions,
   }),
   item<DemoItemMetaData>({
     meta: { text: 'Mercedes' },
     key: 'mercedes',
-    ...itemOptions,
   }),
   itemGroup({
     key: 'group-of-car',
@@ -98,7 +100,6 @@ const items = [
       item<DemoItemMetaData>({
         meta: { text: 'Volkswagen' },
         key: 'Volkswagen',
-        ...itemOptions,
       }),
     ],
   }),
@@ -113,6 +114,7 @@ const items = [
   <SelectableItems
     :items="items"
     :setup="setupHandler"
+    :itemDefaults="itemDefaults"
   >
     <template #render="{ text }: DemoItemMetaData">
       {{ text }}
