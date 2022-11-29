@@ -9,7 +9,6 @@ import {
   mergeProps,
   computed,
   ref,
-  withCtx,
   onBeforeUpdate,
   reactive,
   watch,
@@ -114,7 +113,7 @@ export default defineComponent({
     itemUnfocus: null as unknown as Props['onItemUnfocus'],
     itemDOMFocus: null as unknown as Props['onItemDOMFocus'],
   },
-  setup(props, { emit, expose }) {
+  setup(props, { emit, expose, slots, attrs }) {
     const selectableItems: ComputedRef<Item[]> = computed(() => filterSelectableItems(props.items));
 
     const focusedItemKey = ref('');
@@ -308,45 +307,33 @@ export default defineComponent({
     expose(context);
     props.setup?.(context);
 
-    return {
-      handleDOMFocus,
-      handleMouseEnter,
-      handleClick,
-      isFocused,
-      isDisabled,
-      setFocusByKey,
-      selectItem,
-      saveSelectableItemElement,
-    };
-  },
-  render() {
-    const renderer = (items: AllItems[]): VNodeChild[] =>
+    const itemRenderer = (items: AllItems[]): VNodeChild[] =>
       renderList(items, (item) => {
         if (isItemGroup(item)) {
           const Wrapper = item[wrapperComponentOrTag] || Fragment;
           const props = item.wrapperProps || {};
 
-          const children = renderer(item.items);
+          const children = itemRenderer(item.items);
 
           // Have to use `h` here because JSX thinks
           // renderer(item.items) returns a vNode not vNode[]
           // so it converts it into vNode[][]
           return h(
             Wrapper,
-            mergeProps({ key: item.key, to: 'body' }, props),
-            isComponent(Wrapper) ? { default: withCtx(() => children) } : children,
+            mergeProps(props, { key: item.key }),
+            isComponent(Wrapper) ? { default: () => children } : children,
           );
         }
 
         if (isItem(item)) {
           const ItemTag = isOr(
-            item.elementTag || this.itemDefaults.elementTag,
+            item.elementTag || props.itemDefaults.elementTag,
             isComponentOrTag,
             'div',
           ) as /* For type checking */ 'div';
 
           const itemProps = mergeProps(
-            isOr(this.itemDefaults.elementAttrs!, isObject, {}),
+            isOr(props.itemDefaults.elementAttrs!, isObject, {}),
             isOr(item.elementAttrs as Record<string, never>, isObject, {}),
           );
 
@@ -356,24 +343,24 @@ export default defineComponent({
               class={[
                 ClassNames.Item, //
                 {
-                  [ClassNames.Focused]: this.isFocused(item.key),
-                  [ClassNames.Disabled]: this.isDisabled(item.key),
+                  [ClassNames.Focused]: isFocused(item.key),
+                  [ClassNames.Disabled]: isDisabled(item.key),
                 },
               ]}
               {...itemProps}
-              onMouseenter={() => this.handleMouseEnter(item)}
-              onFocus={(event) => this.handleDOMFocus(event, item)}
-              onClick={() => this.handleClick(item)}
-              ref={(instance) => this.saveSelectableItemElement(item.key, instance as HTMLElement)}
+              onMouseenter={() => handleMouseEnter(item)}
+              onFocus={(event) => handleDOMFocus(event, item)}
+              onClick={() => handleClick(item)}
+              ref={(instance) => saveSelectableItemElement(item.key, instance as HTMLElement)}
             >
-              {this.$slots[DEFAULT_ITEM_SLOT_NAME]?.(item.meta)}
+              {slots[DEFAULT_ITEM_SLOT_NAME]?.(item.meta)}
             </ItemTag>
           );
 
-          const Wrapper = item[wrapperComponentOrTag] || this.itemDefaults[wrapperComponentOrTag];
+          const Wrapper = item[wrapperComponentOrTag] || props.itemDefaults[wrapperComponentOrTag];
           if (isComponentOrTag(Wrapper)) {
             const wrapperProps = mergeProps(
-              isOr(this.itemDefaults.wrapperProps!, isObject, {}),
+              isOr(props.itemDefaults.wrapperProps!, isObject, {}),
               isOr(item.wrapperProps!, isObject, {}),
               { key: item.key },
             );
@@ -382,7 +369,7 @@ export default defineComponent({
               Wrapper as 'div',
               wrapperProps,
               isComponent(Wrapper) //
-                ? { default: withCtx(() => [vNodeItem]) }
+                ? { default: () => [vNodeItem] }
                 : [vNodeItem],
             );
           }
@@ -390,21 +377,23 @@ export default defineComponent({
           return vNodeItem;
         }
 
-        if (isCustomItem(item) && hasOwn(this.$slots, item.name)) {
+        if (isCustomItem(item) && hasOwn(slots, item.name)) {
           return h(
             Fragment,
             { key: item.key }, //
-            this.$slots[item.name]?.(item.meta),
+            slots[item.name]?.(item.meta),
           );
         }
 
         return null;
       });
 
-    const rendered = renderer(this.items);
+    return () => {
+      const rendered = itemRenderer(props.items);
 
-    if (this.noWrapperElement) return h(Fragment, {}, rendered);
+      if (props.noWrapperElement) return h(Fragment, {}, rendered);
 
-    return h('div', mergeProps({ class: ClassNames.Wrapper }, this.$attrs), rendered);
+      return h('div', mergeProps({ class: ClassNames.Wrapper }, attrs), rendered);
+    };
   },
 });
