@@ -1,3 +1,8 @@
+# 0.4.1
+### Improvements
+  - Now instead of creating a renderer function on every render, SelectableItems now returns render function from setup and renderer function is created only once per component. This will increase performance a bit but not recognizable. 
+<br>
+
 # 0.4.0
 ### Features
   - New `itemDefaults` prop to create default options for all selectable items can be created.
