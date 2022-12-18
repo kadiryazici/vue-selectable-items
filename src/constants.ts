@@ -20,3 +20,7 @@ export const ClassNames = {
   Focused: `${libName}-item-focused`,
   Disabled: `${libName}-item-disabled`,
 } as const;
+
+export const READONLY_EMPTY_OBJECT = Object.freeze(Object.create(null)) as Readonly<
+  Record<string, never>
+>;

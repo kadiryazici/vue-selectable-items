@@ -10,15 +10,16 @@ import {
 import useKey from '../../composables/useKey';
 import type { DemoItemMetaData } from '../../types';
 
-const itemDefaults = createItemDefaults({
+const itemDefaults = createItemDefaults((item) => ({
   elementTag: 'button',
   elementAttrs: {
-    tabindex: 0,
+    tabindex: item.disabled ? -1 : 0,
+    disabled: item.disabled ? true : null,
     style: {
       outline: 'none',
     },
   },
-});
+}));
 
 function setupHandler(ctx: Context) {
   useKey(

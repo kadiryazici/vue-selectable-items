@@ -14,7 +14,7 @@ import {
   watch,
   type ComputedRef,
 } from 'vue';
-import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType } from './constants';
+import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType, READONLY_EMPTY_OBJECT } from './constants';
 import {
   filterSelectableItems,
   hasOwn,
@@ -69,7 +69,9 @@ export interface Props {
   noWrapperElement: boolean;
   items: AllItems[];
   setup(context: Context): void;
-  itemDefaults: NullablePartial<ItemDefaults>;
+  itemDefaults:
+    | NullablePartial<ItemDefaults>
+    | ((item: Item<unknown>) => NullablePartial<ItemDefaults>);
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   onSelect: SelectHook;
@@ -103,8 +105,8 @@ export default defineComponent({
       default: null,
     },
     itemDefaults: {
-      type: Object as PropType<Props['itemDefaults']>,
-      default: () => ({}),
+      type: [Object, Function] as PropType<Props['itemDefaults']>,
+      default: null,
     },
   },
   emits: {
@@ -311,7 +313,7 @@ export default defineComponent({
       renderList(items, (item) => {
         if (isItemGroup(item)) {
           const Wrapper = item[wrapperComponentOrTag] || Fragment;
-          const props = item.wrapperProps || {};
+          const props = item.wrapperProps || READONLY_EMPTY_OBJECT;
 
           const children = itemRenderer(item.items);
 
@@ -326,20 +328,25 @@ export default defineComponent({
         }
 
         if (isItem(item)) {
+          const defaults =
+            typeof props.itemDefaults === 'function'
+              ? props.itemDefaults(item)
+              : props.itemDefaults || READONLY_EMPTY_OBJECT;
+
           const ItemTag = isOr(
-            item.elementTag || props.itemDefaults.elementTag,
+            item.elementTag || defaults.elementTag,
             isComponentOrTag,
             'div',
           ) as /* For type checking */ 'div';
 
           const itemProps = mergeProps(
-            isOr(props.itemDefaults.elementAttrs!, isObject, {}),
-            isOr(item.elementAttrs as Record<string, never>, isObject, {}),
+            isOr(defaults.elementAttrs!, isObject, READONLY_EMPTY_OBJECT),
+            isOr(item.elementAttrs as Record<string, never>, isObject, READONLY_EMPTY_OBJECT),
           );
 
           const vNodeItem = (
             <ItemTag
-              data-vue-selectable-items-item
+              data-vue-selectable-items-item={''}
               class={[
                 ClassNames.Item, //
                 {
@@ -357,11 +364,11 @@ export default defineComponent({
             </ItemTag>
           );
 
-          const Wrapper = item[wrapperComponentOrTag] || props.itemDefaults[wrapperComponentOrTag];
+          const Wrapper = item[wrapperComponentOrTag] || defaults[wrapperComponentOrTag];
           if (isComponentOrTag(Wrapper)) {
             const wrapperProps = mergeProps(
-              isOr(props.itemDefaults.wrapperProps!, isObject, {}),
-              isOr(item.wrapperProps!, isObject, {}),
+              isOr(defaults.wrapperProps!, isObject, READONLY_EMPTY_OBJECT),
+              isOr(item.wrapperProps!, isObject, READONLY_EMPTY_OBJECT),
               { key: item.key },
             );
 
@@ -391,7 +398,7 @@ export default defineComponent({
     return () => {
       const rendered = itemRenderer(props.items);
 
-      if (props.noWrapperElement) return h(Fragment, {}, rendered);
+      if (props.noWrapperElement) return h(Fragment, READONLY_EMPTY_OBJECT, rendered);
 
       return h('div', mergeProps({ class: ClassNames.Wrapper }, attrs), rendered);
     };

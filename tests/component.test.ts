@@ -191,7 +191,7 @@ describe('main tests', () => {
     }
   });
 
-  it('should text default options', async () => {
+  async function testItemDefaults(useCallback = false) {
     const items = [
       item({
         key: 'q',
@@ -223,14 +223,15 @@ describe('main tests', () => {
 
     const Wrapper: FunctionalComponent = (_props, { slots }) => h('div', null, slots.default());
 
-    const defaults = createItemDefaults({
+    const defaultsObj = {
       wrapperComponentOrTag: Wrapper,
       wrapperProps: { class: 'wrapper-yes' },
       elementAttrs: {
         surname: 'yazici',
       },
       elementTag: 'span',
-    });
+    };
+    const defaults = createItemDefaults(useCallback ? () => defaultsObj : defaultsObj);
 
     await wrapper.setProps({ items, itemDefaults: defaults });
 
@@ -258,5 +259,8 @@ describe('main tests', () => {
         .findAll('.vue-selectable-items-item') //
         .every(({ element }) => element.tagName === 'BUTTON'),
     ).toBe(true);
-  });
+  }
+
+  it('should test default options object', () => testItemDefaults());
+  it('should test default options callback', () => testItemDefaults(true));
 });
