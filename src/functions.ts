@@ -112,16 +112,17 @@ export function isOr<Value, Or>(value: Value, is: (value: unknown) => boolean, o
   return is(value) ? value : or;
 }
 
-export function createItemDefaults({
-  elementAttrs = null,
-  elementTag = null,
-  wrapperComponentOrTag = null,
-  wrapperProps = null,
-}: NullablePartial<ItemDefaults> = {}): NullablePartial<ItemDefaults> {
+export function createItemDefaults<Meta = unknown>(
+  param: NullablePartial<ItemDefaults> | ((item: Item<Meta>) => NullablePartial<ItemDefaults>),
+) {
+  if (typeof param === 'function') {
+    return param;
+  }
+
+  const { wrapperComponentOrTag = null, ...others } = param;
+
   return {
-    elementAttrs,
-    elementTag,
-    wrapperProps,
+    ...others,
     wrapperComponentOrTag: isComponent(wrapperComponentOrTag)
       ? markRaw(wrapperComponentOrTag)
       : wrapperComponentOrTag,

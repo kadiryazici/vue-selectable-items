@@ -501,12 +501,22 @@ const itemDefaults = createItemDefaults({
     someValue: true
   }
 })
+
+// You can also use a function to create defaults dynamically.
+const itemDefaults2 = createItemDefaults<Meta>((item) => ({
+  elementAttrs: {
+    tabindex: item.disabled ? -1 : 0,
+    role: item.meta?.children ? 'tooltip' : null
+  },
+  elementTag: item.meta?.header ? 'h1' : 'div'
+}))
 </script>
 
 <template>
   <SelectableItems :items="items" :itemDefaults="itemDefaults"/>
 </template>
 ```
+
 ## Context
 
 Context is an object of functions, you can access it via `setup` prop and `template ref`.
