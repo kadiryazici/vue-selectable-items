@@ -1,6 +1,16 @@
+# 0.5.0
+### Features
+  - Now `itemDefaults` prop accepts a function that has `item` passed as parameter, for type safety `createItemDefaults` is updated as well.
+
+### Breaking Changes
+  - Now instead of passing `meta` to render slot `#render="meta"` it passed whole item data `#render="{ meta, disabled, onSelect }"`. This will be helpful for detecting disabled state etc.
+  
+<br>
+
 # 0.4.1
 ### Improvements
   - Now instead of creating a renderer function on every render, SelectableItems now returns render function from setup and renderer function is created only once per component. This will increase performance a bit but not recognizable. 
+
 <br>
 
 # 0.4.0
