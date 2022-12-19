@@ -102,17 +102,17 @@ function handleSelect(meta: ItemMetaWithChildren, item: Item<ItemMetaWithChildre
     :items="currentItems"
     :itemDefaults="itemDefaults"
   >
-    <template #render="{ text, children, back }: ItemMetaWithChildren">
+    <template #render="{ meta }: Item<ItemMetaWithChildren>">
       <IconChevronLeft
         style="transform: translateX(-40%); font-size: 10px"
-        v-if="back"
+        v-if="meta!.back"
       />
 
-      {{ text }}
+      {{ meta!.text }}
 
       <IconChevronRight
         style="transform: translateX(40%); margin-left: auto; font-size: 10px"
-        v-if="!!children"
+        v-if="!!meta!.children"
       />
     </template>
 

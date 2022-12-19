@@ -14,7 +14,7 @@ import {
   watch,
   type ComputedRef,
 } from 'vue';
-import { ClassNames, DEFAULT_ITEM_SLOT_NAME, HookType, READONLY_EMPTY_OBJECT } from './constants';
+import { ClassNames, HookType, READONLY_EMPTY_OBJECT } from './constants';
 import {
   filterSelectableItems,
   hasOwn,
@@ -360,7 +360,7 @@ export default defineComponent({
               onClick={() => handleClick(item)}
               ref={(instance) => saveSelectableItemElement(item.key, instance as HTMLElement)}
             >
-              {slots[DEFAULT_ITEM_SLOT_NAME]?.(item.meta)}
+              {slots.render?.(item)}
             </ItemTag>
           );
 

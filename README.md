@@ -129,7 +129,7 @@ Let's explain everything step by step.
 
   This is main function that creates a selectable item and will be rendered as `render` slot on component.
 
-  You can store any `meta` data in it will be passed as scoped slot `<template #render="meta" />` for render use.
+  You can store any `meta` data in it and item will be passed as scoped slot `<template #render="item" />` for render use, you can access meta data with `{ meta }` or `item.meta`.
 
   Selectable items are always rendered by `render`.
 
@@ -156,7 +156,7 @@ Let's explain everything step by step.
       This slot will be called for each selectable item,
       so meta can be different for some items, it's up to you.
     -->
-      <template #render="meta"> {{ meta.title }} </template>
+      <template #render="{ meta }"> {{ meta.title }} </template>
     </SelectableItems>
 
     <!-- This is what above code renders to DOM -->
@@ -242,7 +242,7 @@ Let's explain everything step by step.
 
   CustomItem doesn't have a wrapper element by default, what is given is rendered.
 
-  You have to specify the slot name of customItem will be rendered to and meta will be passed as slot data.
+  You have to specify the slot name of customItem will be rendered to and meta will be passed as slot data instead of whole item data.
 
   ```html
   <script setup>
@@ -391,12 +391,12 @@ Let's explain everything step by step.
         <h5>{{ title }}</h5>
       </template>
 
-      <template #render="data">
-        <template v-if="typeof data === 'string'"> {{ data }} </template>
+      <template #render="{ meta }">
+        <template v-if="typeof meta === 'string'"> {{ meta }} </template>
 
         <template v-else>
-          <span> {{ data.text }} </span>
-          <span> {{ data.type }} </span>
+          <span> {{ meta.text }} </span>
+          <span> {{ meta.type }} </span>
         </template>
       </template>
     </SelectableItems>
