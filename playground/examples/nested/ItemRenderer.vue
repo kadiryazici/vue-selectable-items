@@ -185,11 +185,11 @@ function setupHandler(ctx: Context) {
     :items="props.items"
     :itemDefaults="itemDefaults"
   >
-    <template #render="{ text, children }: ItemMetaWithChildren">
-      {{ text }}
+    <template #render="{ meta }: Item<ItemMetaWithChildren>">
+      {{ meta!.text }}
       <IconChevronRight
         style="transform: translateX(50%); margin-left: auto; font-size: 10px"
-        v-if="!!children"
+        v-if="!!meta!.children"
       />
     </template>
   </SelectableItems>

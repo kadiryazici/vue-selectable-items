@@ -6,6 +6,8 @@ import {
   type Context,
   itemGroup,
   createItemDefaults,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type Item,
 } from '../../../src';
 import useKey from '../../composables/useKey';
 import type { DemoItemMetaData } from '../../types';
@@ -117,8 +119,8 @@ const items = [
     :setup="setupHandler"
     :itemDefaults="itemDefaults"
   >
-    <template #render="{ text }: DemoItemMetaData">
-      {{ text }}
+    <template #render="{ meta }: Item<DemoItemMetaData>">
+      {{ meta!.text }}
     </template>
 
     <template #label="{ text }: DemoItemMetaData">

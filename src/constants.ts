@@ -11,8 +11,6 @@ export enum HookType {
   DOMFocus,
 }
 
-export const DEFAULT_ITEM_SLOT_NAME = 'render';
-
 const libName = 'vue-selectable-items';
 export const ClassNames = {
   Wrapper: libName,
