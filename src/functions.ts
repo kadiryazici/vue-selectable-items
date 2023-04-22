@@ -1,7 +1,6 @@
 import { markRaw, type Component } from 'vue';
 import { ItemTypes } from './constants';
 import type {
-  AllItems,
   CustomItem,
   CustomItemOptions,
   Item,
@@ -9,6 +8,7 @@ import type {
   ItemGroup,
   ItemGroupOptions,
   ItemOptions,
+  ItemRenderList,
   NullablePartial,
 } from './types';
 
@@ -86,13 +86,22 @@ export function isComponent(value: unknown): value is Component {
   return isFunction(value);
 }
 
+/**
+ *
+ * @param items Items to filter
+ * @param seen Destination of filtered items. Do not pass this argument. It's used internally.
+ */
 export function filterSelectableAndCustomItems<Meta = unknown>(
-  items: AllItems<Meta>[],
+  items: ItemRenderList<Meta>,
+  seen: (Item<Meta> | CustomItem<Meta>)[] = [],
 ): (Item<Meta> | CustomItem<Meta>)[] {
-  const seen: (Item<Meta> | CustomItem<Meta>)[] = [];
   items.forEach((item) => {
+    if (Array.isArray(item)) {
+      filterSelectableAndCustomItems(item, seen);
+    }
+
     if (isItemGroup(item)) {
-      seen.push(...filterSelectableAndCustomItems(item.items));
+      filterSelectableAndCustomItems(item.items, seen);
     }
 
     if (isItem<Meta>(item) || isCustomItem<Meta>(item)) {
@@ -103,7 +112,7 @@ export function filterSelectableAndCustomItems<Meta = unknown>(
   return seen;
 }
 
-export function filterSelectableItems<Meta = unknown>(items: AllItems<Meta>[]): Item<Meta>[] {
+export function filterSelectableItems<Meta = unknown>(items: ItemRenderList<Meta>): Item<Meta>[] {
   const flattened = filterSelectableAndCustomItems(items);
   return flattened.filter(isItem<Meta>);
 }

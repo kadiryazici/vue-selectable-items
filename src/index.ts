@@ -12,6 +12,7 @@ export {
 } from './functions';
 export type {
   AllItems,
+  ItemRenderList,
   CustomItem,
   Item,
   ItemGroup,

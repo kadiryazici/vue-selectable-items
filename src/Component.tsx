@@ -12,7 +12,6 @@ import {
   onBeforeUpdate,
   reactive,
   watch,
-  type ComputedRef,
 } from 'vue';
 import { ClassNames, HookType, READONLY_EMPTY_OBJECT } from './constants';
 import {
@@ -27,7 +26,6 @@ import {
   isOr,
 } from './functions';
 import type {
-  AllItems,
   Item,
   FocusHook,
   SelectHook,
@@ -36,6 +34,7 @@ import type {
   HookFnMap,
   ItemDefaults,
   NullablePartial,
+  ItemRenderList,
 } from './types';
 
 const enum Direction {
@@ -67,7 +66,7 @@ export type Context = {
 
 export interface Props {
   noWrapperElement: boolean;
-  items: AllItems[];
+  items: ItemRenderList;
   setup(context: Context): void;
   itemDefaults:
     | NullablePartial<ItemDefaults>
@@ -116,7 +115,7 @@ export default defineComponent({
     itemDOMFocus: null as unknown as Props['onItemDOMFocus'],
   },
   setup(props, { emit, expose, slots, attrs }) {
-    const selectableItems: ComputedRef<Item[]> = computed(() => filterSelectableItems(props.items));
+    const selectableItems = computed(() => filterSelectableItems(props.items));
 
     const focusedItemKey = ref('');
     const focusedItemIndex = computed(() =>
@@ -309,13 +308,17 @@ export default defineComponent({
     expose(context);
     props.setup?.(context);
 
-    const itemRenderer = (items: AllItems[]): VNodeChild[] =>
+    const renderItems = (items: ItemRenderList): VNodeChild[] =>
       renderList(items, (item) => {
+        if (Array.isArray(item)) {
+          return renderItems(item);
+        }
+
         if (isItemGroup(item)) {
           const Wrapper = item[wrapperComponentOrTag] || Fragment;
           const props = item.wrapperProps || READONLY_EMPTY_OBJECT;
 
-          const children = itemRenderer(item.items);
+          const children = renderItems(item.items);
 
           // Have to use `h` here because JSX thinks
           // renderer(item.items) returns a vNode not vNode[]
@@ -396,7 +399,7 @@ export default defineComponent({
       });
 
     return () => {
-      const rendered = itemRenderer(props.items);
+      const rendered = renderItems(props.items);
 
       if (props.noWrapperElement) return h(Fragment, READONLY_EMPTY_OBJECT, rendered);
 

@@ -445,7 +445,7 @@ Let's explain everything step by step.
 
   interface ItemGroupOptions<WrapperComponent, Props = GetComponentOrElementProps<WrapperComponent>> {
     key: string;
-    items: AllItems[];
+    items: ItemRenderList;
     /**
      * You can wrap this group with a Component or an element.
      * If you pass component, items will be rendered on `default` slot of given component.

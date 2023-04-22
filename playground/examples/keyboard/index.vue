@@ -97,15 +97,25 @@ const items = [
     meta: { text: 'Mercedes' },
     key: 'mercedes',
   }),
-  itemGroup({
-    key: 'group-of-car',
-    items: [
-      item<DemoItemMetaData>({
-        meta: { text: 'Volkswagen' },
-        key: 'Volkswagen',
-      }),
-    ],
-  }),
+  [
+    itemGroup({
+      key: 'group-of-car',
+      items: [
+        [
+          [
+            [
+              [
+                item<DemoItemMetaData>({
+                  meta: { text: 'Volkswagen' },
+                  key: 'Volkswagen',
+                }),
+              ],
+            ],
+          ],
+        ],
+      ],
+    }),
+  ],
 ];
 </script>
 
