@@ -1,5 +1,12 @@
 import { beforeEach, describe, vi, expect, it } from 'vitest';
-import { createItemDefaults, item } from '../src/index';
+import {
+  createItemDefaults,
+  item,
+  filterSelectableAndCustomItems,
+  filterSelectableItems,
+  customItem,
+  itemGroup,
+} from '../src/index';
 import { nanoid } from 'nanoid';
 import { createTextVNode, FunctionalComponent, h, Slot } from 'vue';
 import { mount } from '@vue/test-utils';
@@ -263,4 +270,72 @@ describe('main tests', () => {
 
   it('should test default options object', () => testItemDefaults());
   it('should test default options callback', () => testItemDefaults(true));
+
+  it('should render nested array items properly', () => {
+    const items = [
+      [
+        [
+          [
+            item({
+              key: 'q',
+              meta: 'Item 1',
+              elementAttrs: {
+                name: 'kadir',
+              },
+            }),
+          ],
+        ],
+        item({
+          key: 'qqww',
+          meta: 'Item 2',
+          elementAttrs: {
+            name: 'kadir',
+          },
+        }),
+      ],
+    ];
+
+    const wrapper = createDefaultWrapper({
+      props: {
+        items: [items],
+      },
+    });
+
+    expect(
+      wrapper
+        .findAll('.vue-selectable-items-item')
+        .every((el) => el.element.getAttribute('name') === 'kadir'),
+    ).toBe(true);
+  });
+
+  it('should filter items correctly', () => {
+    const items = [
+      item({
+        key: '1',
+      }),
+      item({
+        key: '2',
+      }),
+      [
+        item({
+          key: '2',
+        }),
+        [
+          item({
+            key: '2',
+          }),
+          customItem({ key: 'qwe', name: 'momentos' }),
+        ],
+      ],
+      [
+        itemGroup({
+          key: 'group',
+          items: [[item({ key: '12332' })]],
+        }),
+      ],
+    ];
+
+    expect(filterSelectableAndCustomItems(items).length).toBe(6);
+    expect(filterSelectableItems(items).length).toBe(5);
+  });
 });

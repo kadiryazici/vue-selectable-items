@@ -1,5 +1,5 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
   "include": ["env.d.ts", "src/**/*", "playground/**/*"],
-  "exclude": ["src/**/__tests__/*", "tests"]
+  "exclude": ["tests"]
 }
