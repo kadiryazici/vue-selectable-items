@@ -1,3 +1,27 @@
+# 1.0.0
+### Features
+  - Now `items` prop supports nested array of items like Vue/React render function, nested arrays are converted to `vNode[]` in render phase. 
+
+  ```ts
+    const items = [
+      item(...),
+
+      users.map((user) => item(user)), // Item[],
+
+      itemGroup({
+        key: '__',
+        items: [
+          item(...),
+          [
+            customItem(...)
+          ]
+        ]
+      })
+    ]
+  ```
+
+<br>
+
 # 0.5.0
 ### Features
   - Now `itemDefaults` prop accepts a function that has `item` passed as parameter, for type safety `createItemDefaults` is updated as well.
