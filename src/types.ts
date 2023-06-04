@@ -12,6 +12,7 @@ export type ItemRenderList<T = any> = (
   | ItemRenderList<T>
   | null
   | undefined
+  | boolean
 )[];
 
 type GetComponentOrElementProps<C> = C extends string
