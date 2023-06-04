@@ -1,4 +1,10 @@
 # 1.0.0
+  - Type fix, now items array accepts null, undefined or boolean for conditional items.
+
+
+<br>
+
+# 1.0.0
 ### Features
   - Now `items` prop supports nested array of items like Vue/React render function, nested arrays are converted to `vNode[]` in render phase. 
 
