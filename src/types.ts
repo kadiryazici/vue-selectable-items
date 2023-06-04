@@ -6,7 +6,13 @@ export type NullablePartial<T> = { [P in keyof T]?: T[P] | undefined | null };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AllItems<T = any> = Item<T> | CustomItem<T> | ItemGroup;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ItemRenderList<T = any> = (AllItems<T> | AllItems<T>[] | ItemRenderList<T>)[];
+export type ItemRenderList<T = any> = (
+  | AllItems<T>
+  | AllItems<T>[]
+  | ItemRenderList<T>
+  | null
+  | undefined
+)[];
 
 type GetComponentOrElementProps<C> = C extends string
   ? C extends keyof JSX.IntrinsicElements
