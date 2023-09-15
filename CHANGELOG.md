@@ -1,4 +1,4 @@
-# 1.0.0
+# 1.0.1
   - Type fix, now items array accepts null, undefined or boolean for conditional items.
 
 
