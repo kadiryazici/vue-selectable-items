@@ -1,0 +1,1 @@
+import{o as e,c as o,b as t}from"./index.612d51d9.js";const c={preserveAspectRatio:"xMidYMid meet",viewBox:"0 0 32 32",width:"1.2em",height:"1.2em"},r=t("path",{fill:"currentColor",d:"M22 16L12 26l-1.4-1.4l8.6-8.6l-8.6-8.6L12 6z"},null,-1),n=[r];function s(i,a){return e(),o("svg",c,n)}const l={name:"carbon-chevron-right",render:s};export{l as I};
